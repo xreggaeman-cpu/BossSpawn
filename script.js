@@ -137,16 +137,16 @@ function saveKill() {
 
 function addManualKill() {
     if (selectedBoss == null) {
-        alert("Najpierw wybierz bossa na mapie!");
+        alert("Choose Boss!");
         return;
     }
 
-    let value = prompt("Wpisz godzinę zabójstwa\nPrzykład:\n23:30");
+    let value = prompt("Time kill\nlike:\n23:30");
     if (value == null || value.trim() == "") return;
 
     let split = value.split(":");
     if (split.length != 2) {
-        alert("Błędny format! Użyj GG:MM");
+        alert("Error! Use GG:MM");
         return;
     }
 
@@ -154,7 +154,7 @@ function addManualKill() {
     let minutes = Number(split[1]);
 
     if (isNaN(hours) || hours < 0 || hours > 23 || isNaN(minutes) || minutes < 0 || minutes > 59) {
-        alert("Podano nieprawidłową godzinę lub minuty!");
+        alert("An invalid hour or minute was entered!");
         return;
     }
 
@@ -389,10 +389,10 @@ document.addEventListener("contextmenu", function(e) {
 });
 
 function addBoss() {
-    let name = prompt("Nazwa bossa:");
+    let name = prompt("Boss name:");
     if (!name) return;
-    let dungeon = prompt("Dungeon / Lokacja:", "Unknown");
-    let type = prompt("Typ (PvP / Mini / Peace):", "PvP");
+    let dungeon = prompt("Dungeon / Region:", "Unknown");
+    let type = prompt("Type (PvP / Mini / Peace):", "PvP");
 
     bosses.push({ id: Date.now(), name: name, dungeon: dungeon, type: type, x: 50, y: 50 });
     saveAllData();
