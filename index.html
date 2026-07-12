@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TL Elite Boss Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Górny pasek z logiem gry oraz zegarem -->
+    <div id="topbar">
+        <div id="logo">
+            THRONE & LIBERTY
+            <span>Elite Boss Tracker</span>
+        </div>
+        <div id="clock"></div>
+    </div>
+
+    <!-- Główny kontener aplikacji -->
+    <div id="container">
+
+        <!-- Panel boczny z informacjami o bossach -->
+        <div id="sidebar">
+            <h2>Boss Information</h2>
+            
+            <div id="bossInfo">
+                <h3>Select Boss</h3>
+                
+                <p>Name: <span id="bossName">---</span></p>
+                <p>Dungeon: <span id="bossDungeon">---</span></p>
+                <p>Type: <span id="bossType">---</span></p>
+                <p>Last Kill: <span id="lastKill">---</span></p>
+                <p>Status: <span id="bossStatus">NEW</span></p>
+                <p>Elapsed: <span id="elapsed">00:00:00</span></p>
+
+                <!-- Przycisk resetowania timera (główny) -->
+                <button id="killButton">RESET TIMER</button>
+
+                <!-- Ostylowana grupa dodatkowych przycisków zarządzania -->
+                <div class="button-group">
+                    <button id="manualKill">ADD KILL TIME</button>
+                    <button id="exportButton">EXPORT MAP</button>
+                    <button id="addBoss">ADD BOSS</button>
+                </div>
+
+                <h3>History</h3>
+                <ul id="historyList">
+                    <li>No history</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Główny obszar mapy taktycznej -->
+        <div id="mapWrapper">
+            <div id="mapContent">
+                <img id="worldMap" src="images/worldmap.png" draggable="false">
+                <div id="bossLayer"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Odtwarzacz audio potrzebny do działania powiadomień dźwiękowych (Alertów) -->
+    <audio id="bossAlertSound" src="alert.mp3" preload="auto"></audio>
+
+    <!-- Skrypt sterujący logiką aplikacji -->
+    <script src="script.js"></script>
+</body>
+</html>

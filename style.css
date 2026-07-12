@@ -1,0 +1,484 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+}
+
+body{
+    background:#111;
+    color:white;
+    overflow:hidden;
+}
+
+#topbar{
+
+    height:70px;
+
+    background:#1c1c1c;
+
+    border-bottom:2px solid #333;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding-left:25px;
+
+    padding-right:25px;
+
+}
+
+#logo{
+
+    font-size:28px;
+
+    font-weight:bold;
+
+    color:#ffd54f;
+
+}
+
+#logo span{
+
+    display:block;
+
+    font-size:13px;
+
+    color:white;
+
+    font-weight:400;
+
+}
+
+#clock{
+
+    font-size:22px;
+
+    color:#00e676;
+
+}
+
+#container{
+
+    display:flex;
+
+    width:100vw;
+
+    height:calc(100vh - 70px);
+
+}
+
+#sidebar{
+
+    width:360px;
+
+    background:#202020;
+
+    border-right:2px solid #333;
+
+    overflow:auto;
+
+    padding:20px;
+
+}
+
+#sidebar h2{
+
+    margin-bottom:20px;
+
+    color:#ffc107;
+
+}
+
+#sidebar h3{
+
+    margin-top:20px;
+
+    margin-bottom:15px;
+
+}
+
+#sidebar p{
+
+    margin-top:8px;
+
+    margin-bottom:8px;
+
+}
+
+
+#killButton{
+
+    margin-top:20px;
+
+    width:100%;
+
+    padding:15px;
+
+    font-size:18px;
+
+    background:#d32f2f;
+
+    border:none;
+
+    border-radius:8px;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.2s;
+
+}
+
+#killButton:hover{
+
+    background:#ef5350;
+
+}
+
+#historyList{
+
+    list-style:none;
+
+    margin-top:15px;
+
+}
+
+#historyList li{
+
+    background:#2d2d2d;
+
+    margin-bottom:8px;
+
+    padding:8px;
+
+    border-radius:6px;
+
+}
+
+#mapWrapper{
+
+    position:relative;
+
+    flex:1;
+
+    overflow:hidden;
+
+    background:black;
+
+}
+
+#worldMap{
+
+position:absolute;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+height:100%;
+
+object-fit:contain;
+
+pointer-events:none;
+
+user-select:none;
+
+}
+
+#bossLayer{
+
+position:absolute;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+height:100%;
+
+}
+
+.boss{
+
+    position:absolute;
+
+    width:28px;
+
+    height:28px;
+
+    border-radius:50%;
+
+    background:red;
+
+    border:3px solid white;
+
+    cursor:pointer;
+
+    transition:.15s;
+
+}
+
+.boss:hover{
+
+    transform:scale(1.25);
+
+}
+
+.green{
+
+    background:#4caf50;
+
+}
+
+.yellow{
+
+    background:#ffc107;
+
+}
+
+.red{
+
+    background:#f44336;
+
+}
+
+.tooltip{
+
+    position:absolute;
+
+    background:#222;
+
+    color:white;
+
+    padding:5px 10px;
+
+    border-radius:6px;
+
+    font-size:13px;
+
+    pointer-events:none;
+
+    white-space:nowrap;
+
+    display:none;
+
+    z-index:9999;
+
+}
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#1d1d1d;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#555;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#888;
+
+}
+.boss{
+
+transform:translate(-50%,-50%);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:11px;
+
+font-weight:bold;
+
+color:white;
+
+}
+
+.blue{
+background:#3b82f6 !important;
+}
+
+.green{
+background:#00d26a !important;
+}
+
+.yellow{
+background:#ffd400 !important;
+}
+
+.orange{
+background:#ff9800 !important;
+}
+
+.red{
+background:#ff3030 !important;
+}
+
+.pulse{
+
+animation:pulse 1s infinite;
+
+}
+
+@keyframes pulse{
+
+0%{
+
+transform:translate(-50%,-50%) scale(1);
+
+}
+
+50%{
+
+transform:translate(-50%,-50%) scale(1.4);
+
+}
+
+100%{
+
+transform:translate(-50%,-50%) scale(1);
+
+}
+
+}
+#mapContent{
+
+position:absolute;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+height:100%;
+
+transform-origin:0 0;
+
+cursor:grab;
+
+}
+
+#mapContent{
+
+position:absolute;
+
+left:0;
+
+top:0;
+
+width:100%;
+
+height:100%;
+
+transform-origin:0 0;
+
+cursor:grab;
+
+}
+
+#mapContent:active{
+
+cursor:grabbing;
+
+}
+
+/* ============================================
+   POPRAWIONA ANIMACJA I POZYCJONOWANIE
+   ============================================ */
+
+/* Główny kontener grupujący kropkę i licznik */
+/* ============================================
+   OSTATECZNE, BEZBŁĘDNE WYŚRODKOWANIE KROPKI
+   ============================================ */
+
+/* Kontener grupujący elementy - teraz jest zwykłym punktem na mapie */
+.boss-container {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* KROPA - Dostaje tradycyjne przesunięcie o 50%, co blokuje jakiekolwiek rozjeżdżanie */
+.boss {
+    position: absolute;
+    pointer-events: auto;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid white;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
+    
+    /* To centrowanie wymusza idealną pozycję w każdych warunkach */
+    transform: translate(-50%, -50%) scale(1);
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Efekt najechania myszką (hover) - dodaje scale(1.25) bez niszczenia centrowania */
+.boss:hover {
+    transform: translate(-50%, -50%) scale(1.25) !important;
+    z-index: 100;
+}
+
+/* Klasa aktywująca pulsowanie - bezpiecznie powiększa kropkę od jej realnego środka */
+.pulse {
+    animation: realPulse 1.6s infinite ease-in-out;
+    z-index: 99;
+}
+
+/* ANIMACJA: Płynne rośnięcie i malenie kółka (z zachowaniem translate -50%) */
+@keyframes realPulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 48, 48, 0.8);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.35); /* Rośnie równo o 35% */
+        box-shadow: 0 0 18px 6px rgba(255, 48, 48, 0.6);
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 48, 48, 0);
+    }
+}
+
+/* Licznik nad kropką - wycentrowany i podniesiony do góry */
+.boss-timer {
+    position: absolute;
+    bottom: 22px; /* Pozycja idealnie nad kropką */
+    transform: translateX(-50%); /* Centrowanie paska czasu w osi kropki */
+    background: rgba(17, 17, 17, 0.9);
+    border: 1px solid #444;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+
