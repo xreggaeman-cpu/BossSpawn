@@ -250,12 +250,15 @@ function updateMapTimers() {
             }
 
             data.sort((a, b) => b - a);
-            let respawnTime = 3 * 3600;
+            let respawnTime = 3 * 3600; // 3 godziny w sekundach
             let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
             let timeLeft = respawnTime - diffInSeconds;
 
             if (timeLeft <= 0) {
-                timerEl.innerText = "SPAWNED";
+                // KLUCZOWA ZMIANA: Gdy licznik spadnie poniżej zera, obliczamy ile sekund minęło OD respawnu
+                let secondsAgo = Math.abs(timeLeft); // Zamieniamy wartość ujemną na dodatnią
+                
+                timerEl.innerText = "SPAWNED " + secondsToString(secondsAgo) + " AGO";
                 timerEl.style.color = "#ff3030";
             } else {
                 timerEl.innerText = secondsToString(timeLeft);
@@ -264,6 +267,7 @@ function updateMapTimers() {
         });
     });
 }
+
 
 function updateBossStates() {
     document.querySelectorAll(".boss").forEach(icon => {
