@@ -31,16 +31,16 @@
                 <p>Dungeon: <span id="bossDungeon">---</span></p>
                 <p>Type: <span id="bossType">---</span></p>
                 <p>Last Kill: <span id="lastKill">---</span></p>
-                <p>Status: <span id="bossStatus">NEW</span></p>
+                <p>Status: <span id="bossStatus">READY</span></p>
                 <p>Elapsed: <span id="elapsed">00:00:00</span></p>
 
-                <!-- Przycisk resetowania timera (główny) -->
-                <button id="killButton">KILLED NOW</button>
+                <!-- Przycisk rejestracji natychmiastowego zabójstwa -->
+                <button id="killButton">KILLED</button>
 
-                <!-- Ostylowana grupa dodatkowych przycisków zarządzania -->
+                <!-- Ostylowana grupa dodatkowych przycisków zarządzania chmurą -->
                 <div class="button-group">
                     <button id="manualKill">ADD KILL TIME</button>
-                    <button id="exportButton">EXPORT MAP</button>
+                    <button id="resetBossState">RESET TO BLUE</button>
                     <button id="addBoss">ADD BOSS</button>
                 </div>
 
@@ -61,10 +61,7 @@
 
     </div>
 
-    <!-- Odtwarzacz audio potrzebny do działania powiadomień dźwiękowych (Alertów) -->
-    <audio id="bossAlertSound" src="alert.mp3" preload="auto"></audio>
-
-    <!-- Skrypt sterujący logiką aplikacji -->
+    <!-- Skrypt sterujący logiką aplikacji połączony online z Firebase -->
     <script src="script.js"></script>
 </body>
 </html>
