@@ -2,7 +2,7 @@
 // TL ELITE BOSS TRACKER - FIREBASE LIVE SCRIPT
 // ============================================
 
-// KONFIGURACJA CHMURY - Podpięta pod Twoją bazę danych Firebase
+// KONFIGURACJA CHMURY - Twój oryginalny link z Firebase
 const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
 
 // Baza danych domyślnych bossów (jeśli baza w chmurze jest całkowicie pusta)
@@ -22,7 +22,7 @@ function loadAllData() {
     // Zabezpieczenie przed przerwaniem ruchu podczas przeciągania ikony myszką
     if (dragBoss !== null) return;
 
-    // Pobieranie struktury bossów z wymuszonym ominięciem pamięci podręcznej (Cache Busting)
+    // Pobieranie struktury bossów z ominięciem pamięci podręcznej (Cache Busting)
     fetch(`${FIREBASE_URL}bosses.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(data => {
@@ -50,7 +50,7 @@ function saveAllData() {
 }
 
 function fetchBossHistory(bossId, callback) {
-    // Pobieranie historii z chmury z unikalnym znacznikiem czasu dla każdego zapytania
+    // Pobieranie historii z chmury z unikalnym znacznikiem czasu
     fetch(`${FIREBASE_URL}history/boss_${bossId}.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(data => {
@@ -64,6 +64,12 @@ function saveKillToCloud(bossId, timestamp) {
         .then(res => res.json())
         .then(data => {
             let history = data || [];
+            
+            // Jeśli na początku był znacznik resetu (0), usuwamy go przed dodaniem realnego killa
+            if (history[0] === 0) {
+                history.shift();
+            }
+
             history.unshift(timestamp);
             history.sort((a, b) => b - a);
 
@@ -176,17 +182,33 @@ function resetBossToBlue() {
         alert("Najpierw wybierz bossa na mapie!");
         return;
     }
-    if (!confirm(`Zresetować historię bossa: ${selectedBoss.name}?`)) return;
+    if (!confirm(`Zresetować wizualnie bossa: ${selectedBoss.name} do stanu READY bez kasowania historii?`)) return;
 
     let currentId = selectedBoss.id;
-    fetch(`${FIREBASE_URL}history/boss_${currentId}.json`, { method: "DELETE" })
+    
+    fetch(`${FIREBASE_URL}history/boss_${currentId}.json`)
+        .then(res => res.json())
+        .then(data => {
+            let history = data || [];
+            
+            // Wstrzykujemy bezpieczny znacznik 0 na początek, informujący o sof-tresecie koloru
+            if (history[0] !== 0) {
+                history.unshift(0); 
+            }
+
+            return fetch(`${FIREBASE_URL}history/boss_${currentId}.json`, {
+                method: "PUT",
+                body: JSON.stringify(history)
+            });
+        })
         .then(() => {
             loadHistory();
             updateElapsed();
             updateBossStates();
             updateStatus();
             updateMapTimers();
-        });
+        })
+        .catch(err => console.error("Błąd podczas resetowania bossa:", err));
 }
 
 function loadHistory() {
@@ -197,16 +219,20 @@ function loadHistory() {
     fetchBossHistory(currentId, (data) => {
         if (selectedBoss && selectedBoss.id === currentId) {
             list.innerHTML = "";
-            if (data.length == 0) {
+            
+            // Odrzucamy znacznik resetu (0) przy wyświetlaniu listy historycznej w panelu
+            let realHistory = data.filter(time => time !== 0);
+
+            if (realHistory.length == 0) {
                 list.innerHTML = "<li>No history</li>";
                 document.getElementById("lastKill").innerText = "---";
                 return;
             }
 
-            data.sort((a, b) => b - a);
-            document.getElementById("lastKill").innerText = formatDate(new Date(data[0]));
+            realHistory.sort((a, b) => b - a);
+            document.getElementById("lastKill").innerText = formatDate(new Date(realHistory[0]));
 
-            data.forEach((time, index) => {
+            realHistory.forEach((time, index) => {
                 let li = document.createElement("li");
                 li.innerText = formatDate(new Date(time));
                 li.style.cursor = "pointer";
@@ -214,7 +240,10 @@ function loadHistory() {
                 
                 li.onclick = function() {
                     if (!confirm(`Usunąć ten wpis z historii:\n${formatDate(new Date(time))}?`)) return;
-                    data.splice(index, 1);
+                    
+                    let origIndex = data.indexOf(time);
+                    if (origIndex !== -1) data.splice(origIndex, 1);
+
                     fetch(`${FIREBASE_URL}history/boss_${currentId}.json`, {
                         method: "PUT",
                         body: JSON.stringify(data)
@@ -250,12 +279,14 @@ function updateElapsed() {
         return;
     }
     fetchBossHistory(selectedBoss.id, (data) => {
-        if (data.length == 0) {
+        // Ignorujemy znacznik resetu przy obliczaniu czasu elapsed
+        let realHistory = data.filter(time => time !== 0);
+        if (realHistory.length == 0) {
             document.getElementById("elapsed").innerText = "--";
             return;
         }
-        data.sort((a, b) => b - a);
-        let diff = Math.floor((Date.now() - data[0]) / 1000);
+        realHistory.sort((a, b) => b - a);
+        let diff = Math.floor((Date.now() - realHistory[0]) / 1000);
         document.getElementById("elapsed").innerText = secondsToString(diff);
     });
 }
@@ -271,7 +302,8 @@ function updateMapTimers() {
             let timerEl = document.getElementById("timer_" + boss.id);
             if (!timerEl) return;
 
-            if (data.length == 0) {
+            // Jeśli na szczycie historii jest 0, wymuszamy czysty stan READY
+            if (data.length == 0 || data[0] === 0) {
                 timerEl.innerText = "READY";
                 timerEl.style.color = "#3b82f6";
                 return;
@@ -291,13 +323,11 @@ function updateBossStates() {
         let id = Number(icon.dataset.id);
         fetchBossHistory(id, (data) => {
             icon.className = "boss";
-            if (data.length == 0) {
+            if (data.length == 0 || data[0] === 0) {
                 icon.classList.add("blue");
                 return;
             }
-            // Zawsze czerwona pulsująca kropka, jeśli boss został zabity chociaż raz
-            icon.classList.add("red");
-            icon.classList.add("pulse");
+            icon.classList.add("red", "pulse");
         });
     });
 }
@@ -308,10 +338,10 @@ function updateStatus() {
     if (!span) return;
 
     fetchBossHistory(selectedBoss.id, (data) => {
-        if (data.length == 0) {
-        span.innerHTML = '<span style="color: #3b82f6;">🔵 READY</span>';
-        return;
-    }
+        if (data.length == 0 || data[0] === 0) {
+            span.innerHTML = '<span style="color: #3b82f6;">🔵 READY</span>';
+            return;
+        }
         span.innerHTML = '<span style="color: #ff3030;" class="pulse">🔴 KILLED</span>';
     });
 }
