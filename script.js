@@ -3,7 +3,7 @@
 // ============================================
 
 // KONFIGURACJA CHMURY - Tutaj wklej link skopiowany ze swojej konsoli Firebase!
-const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
+const FIREBASE_URL = "TUTAJ_WKLEJ_SWOJ_LINK_Z_FIREBASE/";
 
 // Baza danych domyślnych bossów (jeśli baza w chmurze jest całkowicie pusta)
 const defaultBosses = [
@@ -19,7 +19,6 @@ let playedAlerts = {};
 // SYNCHRONIZACJA Z BAZĄ DANYCH W CHMURZE
 // ============================================
 
-// Pobieranie struktury bossów oraz ich pozycji na mapie z Firebase
 function loadAllData() {
     fetch(`${FIREBASE_URL}bosses.json`)
         .then(res => res.json())
@@ -35,7 +34,6 @@ function loadAllData() {
         .catch(err => console.error("Błąd pobierania struktury bossów:", err));
 }
 
-// Zapisywanie struktury i pozycji bossów do chmury
 function saveAllData() {
     fetch(`${FIREBASE_URL}bosses.json`, {
         method: "PUT",
@@ -43,7 +41,6 @@ function saveAllData() {
     }).catch(err => console.error("Błąd zapisu pozycji:", err));
 }
 
-// Pobieranie historii zabójstw dla konkretnego bossa z chmury (Live Check)
 function fetchBossHistory(bossId, callback) {
     fetch(`${FIREBASE_URL}history/boss_${bossId}.json`)
         .then(res => res.json())
@@ -53,7 +50,6 @@ function fetchBossHistory(bossId, callback) {
         .catch(err => console.error("Błąd pobierania historii:", err));
 }
 
-// Zapisywanie nowego zabójstwa do chmury
 function saveKillToCloud(bossId, timestamp) {
     fetch(`${FIREBASE_URL}history/boss_${bossId}.json`)
         .then(res => res.json())
@@ -214,6 +210,7 @@ function formatDate(date) {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 }
 
+// Naprawione powtórzenie funkcji secondsToString
 function secondsToString(sec) {
     let h = Math.floor(sec / 3600);
     let m = Math.floor((sec % 3600) / 60);
@@ -242,7 +239,6 @@ function updateClock() {
     if (clockEl) clockEl.innerText = new Date().toLocaleTimeString();
 }
 
-// Pobieranie czasów wszystkich bossów z chmury i odliczanie na mapie
 function updateMapTimers() {
     bosses.forEach(boss => {
         fetchBossHistory(boss.id, (data) => {
@@ -299,7 +295,8 @@ function updateBossStates() {
             else if (timeLeft <= 1800 && timeLeft > 600) icon.classList.add("orange");
             else {
                 icon.classList.add("red");
-            icon.classList.add("pulse");
+                icon.classList.add("pulse");
+            }
         });
     });
 }
@@ -311,14 +308,14 @@ function updateStatus() {
 
     fetchBossHistory(selectedBoss.id, (data) => {
         if (data.length == 0) {
-            span.innerHTML = '🔵 NEW';
-            return;
-        }
+        span.innerHTML = '🔵 NEW';
+        return;
+    }
         data.sort((a, b) => b - a);
         let respawnTime = 3 * 3600;
         let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
         let timeLeft = respawnTime - diffInSeconds;
-
+        
         if (timeLeft > 3600) span.innerHTML = '🟢 Fresh Kill';
         else if (timeLeft <= 3600 && timeLeft > 1800) span.innerHTML = '🟡 Almost';
         else if (timeLeft <= 1800 && timeLeft > 600) span.innerHTML = '🟠 Soon';
@@ -415,5 +412,5 @@ updateClock();
 setInterval(updateElapsed, 1000);
 setInterval(updateClock, 1000);
 setInterval(updateStatus, 1000);
-setInterval(updateMapTimers, 2000);  // Sprawdzanie czasów w chmurze co 2 sekundy
+setInterval(updateMapTimers, 2000);  // Sprawdzanie chmury co 2 sekundy
 setInterval(updateBossStates, 6000); // Odświeżanie kolorów co 6 sekund
