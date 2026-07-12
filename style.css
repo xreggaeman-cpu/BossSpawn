@@ -258,10 +258,12 @@ body{
 }
 
 /* Licznik paska czasu przypięty pionowo nad kropką bossa */
+/* Licznik paska czasu - PRZENIESIONY NA LEWĄ STRONĘ KROPKI BOSS-A */
 .boss-timer {
     position: absolute;
-    bottom: 22px;
-    transform: translateX(-50%);
+    top: 0; /* Wyśrodkowanie w osi poziomej kropki */
+    right: 34px; /* Odsunięcie napisu w lewo od krawędzi kółka (28px kropka + 6px odstępu) */
+    transform: translateY(-50%); /* Idealne centrowanie pionowe względem kropki */
     background: rgba(17, 17, 17, 0.9);
     border: 1px solid #444;
     color: #fff;
@@ -269,10 +271,12 @@ body{
     border-radius: 4px;
     font-size: 11px;
     font-weight: bold;
-    white-space: nowrap;
+    white-space: nowrap; /* Blokuje łamanie tekstu do nowej linii */
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     z-index: 10;
+    text-align: right; /* Tekst wyrównuje się do prawej strony, do kropki */
 }
+
 
 /* ============================================
    PASEK PRZEWIJANIA (SCROLLBAR SIDEBARU)
