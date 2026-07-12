@@ -208,6 +208,9 @@ body{
     position: absolute;
     pointer-events: none;
     z-index: 10;
+    /* Sztywne wymiary punktu bazowego pozwalają idealnie wyrównać boczny tekst */
+    width: 0;
+    height: 0;
 }
 
 .boss {
@@ -219,10 +222,7 @@ body{
     border: 3px solid white;
     cursor: pointer;
     box-shadow: 0 0 8px rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    /* translate -50% -50% gwarantuje, że kropka leży idealnie w punkcie X i Y mapy */
+    /* Gwarancja idealnego wyśrodkowania kółka na koordynatach */
     transform: translate(-50%, -50%) scale(1);
     transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
@@ -232,11 +232,11 @@ body{
     z-index: 100;
 }
 
-/* Kolory statusów z instrukcją !important w celu unikania konfliktów */
+/* Kolory statusów */
 .blue { background: #3b82f6 !important; }
 .red { background: #ff3030 !important; }
 
-/* Klasa aktywująca fizyczną animację rośnięcia i malenia kropki */
+/* Klasa aktywująca pulsowanie */
 .pulse {
     animation: realPulse 1.6s infinite ease-in-out;
     z-index: 99;
@@ -248,7 +248,7 @@ body{
         box-shadow: 0 0 0 0 rgba(255, 48, 48, 0.8);
     }
     50% {
-        transform: translate(-50%, -50%) scale(1.35); /* Fizyczne powiększenie o 35% */
+        transform: translate(-50%, -50%) scale(1.35);
         box-shadow: 0 0 18px 6px rgba(255, 48, 48, 0.6);
     }
     100% {
@@ -257,13 +257,12 @@ body{
     }
 }
 
-/* Licznik paska czasu przypięty pionowo nad kropką bossa */
-/* Licznik paska czasu - PRZENIESIONY NA LEWĄ STRONĘ KROPKI BOSS-A */
+/* NAPRAWIONY LICZNIK: WYMUSZONE WYŚWIETLANIE PO LEWEJ STRONIE */
 .boss-timer {
     position: absolute;
-    top: 0; /* Wyśrodkowanie w osi poziomej kropki */
-    right: 34px; /* Odsunięcie napisu w lewo od krawędzi kółka (28px kropka + 6px odstępu) */
-    transform: translateY(-50%); /* Idealne centrowanie pionowe względem kropki */
+    top: 0;
+    right: 20px; /* Przypięte na sztywno 20px w lewo od geometrycznego środka kropki */
+    transform: translateY(-50%); /* Centrowanie w pionie idealnie z kropką */
     background: rgba(17, 17, 17, 0.9);
     border: 1px solid #444;
     color: #fff;
@@ -271,12 +270,11 @@ body{
     border-radius: 4px;
     font-size: 11px;
     font-weight: bold;
-    white-space: nowrap; /* Blokuje łamanie tekstu do nowej linii */
+    white-space: nowrap;
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     z-index: 10;
-    text-align: right; /* Tekst wyrównuje się do prawej strony, do kropki */
+    text-align: right;
 }
-
 
 /* ============================================
    PASEK PRZEWIJANIA (SCROLLBAR SIDEBARU)
