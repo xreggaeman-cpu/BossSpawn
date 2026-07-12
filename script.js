@@ -13,7 +13,6 @@ const defaultBosses = [
 let bosses = [];
 let selectedBoss = null;
 const layer = document.getElementById("bossLayer");
-let playedAlerts = {};
 
 // ============================================
 // SYNCHRONIZACJA Z BAZĄ DANYCH W CHMURZE
@@ -210,7 +209,6 @@ function formatDate(date) {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 }
 
-// Naprawione powtórzenie funkcji secondsToString
 function secondsToString(sec) {
     let h = Math.floor(sec / 3600);
     let m = Math.floor((sec % 3600) / 60);
@@ -256,15 +254,6 @@ function updateMapTimers() {
             let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
             let timeLeft = respawnTime - diffInSeconds;
 
-            if (timeLeft <= 600 && timeLeft > 0) {
-                if (!playedAlerts[boss.id]) {
-                    let audio = document.getElementById("bossAlertSound");
-                    if (audio) audio.play().catch(() => {});
-                    playedAlerts[boss.id] = true;
-                }
-            }
-            if (timeLeft > 600) playedAlerts[boss.id] = false;
-
             if (timeLeft <= 0) {
                 timerEl.innerText = "SPAWNED";
                 timerEl.style.color = "#ff3030";
@@ -308,16 +297,16 @@ function updateStatus() {
 
     fetchBossHistory(selectedBoss.id, (data) => {
         if (data.length == 0) {
-        span.innerHTML = '🔵 NEW';
-        return;
-    }
+            span.innerHTML = '<span style="color: #3b82f6;">🔵 NEW</span>';
+            return;
+        }
         data.sort((a, b) => b - a);
         let respawnTime = 3 * 3600;
         let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
         let timeLeft = respawnTime - diffInSeconds;
-        
-        if (timeLeft > 3600) span.innerHTML = '🟢 Fresh Kill';
-        else if (timeLeft <= 3600 && timeLeft > 1800) span.innerHTML = '🟡 Almost';
+
+        if (timeLeft > 3600) span.innerHTML = '<span style="color: #00d26a;">🟢 Fresh Kill</span>';
+                else if (timeLeft <= 3600 && timeLeft > 1800) span.innerHTML = '🟡 Almost';
         else if (timeLeft <= 1800 && timeLeft > 600) span.innerHTML = '🟠 Soon';
         else span.innerHTML = '🔴 SHOULD BE UP';
     });
@@ -414,3 +403,4 @@ setInterval(updateClock, 1000);
 setInterval(updateStatus, 1000);
 setInterval(updateMapTimers, 2000);  // Sprawdzanie chmury co 2 sekundy
 setInterval(updateBossStates, 6000); // Odświeżanie kolorów co 6 sekund
+
