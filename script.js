@@ -1,5 +1,5 @@
 // ============================================
-// TL ELITE BOSS TRACKER - FIREBASE LIVE SCRIPT
+// TL ELITE BOSS TRACKER - LIVE SIMPLE SCRIPT
 // ============================================
 
 // KONFIGURACJA CHMURY - Tutaj wklej link skopiowany ze swojej konsoli Firebase!
@@ -19,13 +19,13 @@ const layer = document.getElementById("bossLayer");
 // ============================================
 
 function loadAllData() {
-    fetch(`${FIREBASE_URL}bosses.json`)
+    if (dragBoss !== null) return;
+
+    fetch(`${FIREBASE_URL}bosses.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(data => {
             if (data) {
                 bosses = data;
-                
-                // POPRAWKA: Jeśli miałeś wybranego bossa, upewniamy się, że obiekt referencji wciąż istnieje
                 if (selectedBoss) {
                     let updatedBoss = bosses.find(b => b.id === selectedBoss.id);
                     if (updatedBoss) selectedBoss = updatedBoss;
@@ -39,7 +39,6 @@ function loadAllData() {
         .catch(err => console.error("Błąd pobierania struktury bossów:", err));
 }
 
-
 function saveAllData() {
     fetch(`${FIREBASE_URL}bosses.json`, {
         method: "PUT",
@@ -48,7 +47,7 @@ function saveAllData() {
 }
 
 function fetchBossHistory(bossId, callback) {
-    fetch(`${FIREBASE_URL}history/boss_${bossId}.json`)
+    fetch(`${FIREBASE_URL}history/boss_${bossId}.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(data => {
             callback(data || []);
@@ -95,7 +94,7 @@ function loadBosses() {
         let timerDiv = document.createElement("div");
         timerDiv.className = "boss-timer";
         timerDiv.id = "timer_" + boss.id;
-        timerDiv.innerText = "Ładowanie...";
+        timerDiv.innerText = "READY";
         container.appendChild(timerDiv);
 
         let div = document.createElement("div");
@@ -137,16 +136,16 @@ function saveKill() {
 
 function addManualKill() {
     if (selectedBoss == null) {
-        alert("Choose Boss!");
+        alert("Najpierw wybierz bossa na mapie!");
         return;
     }
 
-    let value = prompt("Time kill\nlike:\n23:30");
+    let value = prompt("Wpisz godzinę zabójstwa\nPrzykład:\n23:30");
     if (value == null || value.trim() == "") return;
 
     let split = value.split(":");
     if (split.length != 2) {
-        alert("Error! Use GG:MM");
+        alert("Błędny format! Użyj GG:MM");
         return;
     }
 
@@ -154,7 +153,7 @@ function addManualKill() {
     let minutes = Number(split[1]);
 
     if (isNaN(hours) || hours < 0 || hours > 23 || isNaN(minutes) || minutes < 0 || minutes > 59) {
-        alert("An invalid hour or minute was entered!");
+        alert("Podano nieprawidłową godzinę lub minuty!");
         return;
     }
 
@@ -166,6 +165,24 @@ function addManualKill() {
     }
 
     saveKillToCloud(selectedBoss.id, d.getTime());
+}
+
+function resetBossToBlue() {
+    if (selectedBoss == null) {
+        alert("Najpierw wybierz bossa na mapie!");
+        return;
+    }
+    if (!confirm(`Zresetować historię bossa: ${selectedBoss.name}?`)) return;
+
+    let currentId = selectedBoss.id;
+    fetch(`${FIREBASE_URL}history/boss_${currentId}.json`, { method: "DELETE" })
+        .then(() => {
+            loadHistory();
+            updateElapsed();
+            updateBossStates();
+            updateStatus();
+            updateMapTimers();
+        });
 }
 
 function loadHistory() {
@@ -257,24 +274,13 @@ function updateMapTimers() {
             }
 
             data.sort((a, b) => b - a);
-            let respawnTime = 3 * 3600; // 3 godziny w sekundach
             let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
-            let timeLeft = respawnTime - diffInSeconds;
-
-            if (timeLeft <= 0) {
-                // KLUCZOWA ZMIANA: Gdy licznik spadnie poniżej zera, obliczamy ile sekund minęło OD respawnu
-                let secondsAgo = Math.abs(timeLeft); // Zamieniamy wartość ujemną na dodatnią
-                
-                timerEl.innerText = "SPAWNED " + secondsToString(secondsAgo) + " AGO";
-                timerEl.style.color = "#ff3030";
-            } else {
-                timerEl.innerText = secondsToString(timeLeft);
-                timerEl.style.color = "#fff";
-            }
+            
+            timerEl.innerText = "KILLED " + secondsToString(diffInSeconds) + " AGO";
+            timerEl.style.color = "#ff3030";
         });
     });
 }
-
 
 function updateBossStates() {
     document.querySelectorAll(".boss").forEach(icon => {
@@ -285,18 +291,9 @@ function updateBossStates() {
                 icon.classList.add("blue");
                 return;
             }
-            data.sort((a, b) => b - a);
-            let respawnTime = 3 * 3600;
-            let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
-            let timeLeft = respawnTime - diffInSeconds;
-
-            if (timeLeft > 3600) icon.classList.add("green");
-            else if (timeLeft <= 3600 && timeLeft > 1800) icon.classList.add("yellow");
-            else if (timeLeft <= 1800 && timeLeft > 600) icon.classList.add("orange");
-            else {
-                icon.classList.add("red");
-                icon.classList.add("pulse");
-            }
+            // Jeśli jest jakakolwiek historia killi, boss jest czerwony i pulsuje
+            icon.classList.add("red");
+            icon.classList.add("pulse");
         });
     });
 }
@@ -308,21 +305,16 @@ function updateStatus() {
 
     fetchBossHistory(selectedBoss.id, (data) => {
         if (data.length == 0) {
-            span.innerHTML = '<span style="color: #3b82f6;">🔵 NEW</span>';
+            span.innerHTML = '<span style="color: #3b82f6;">🔵 READY</span>';
             return;
         }
-        data.sort((a, b) => b - a);
-        let respawnTime = 3 * 3600;
-        let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
-        let timeLeft = respawnTime - diffInSeconds;
-
-        if (timeLeft > 3600) span.innerHTML = '<span style="color: #00d26a;">🟢 Fresh Kill</span>';
-                else if (timeLeft <= 3600 && timeLeft > 1800) span.innerHTML = '🟡 Almost';
-        else if (timeLeft <= 1800 && timeLeft > 600) span.innerHTML = '🟠 Soon';
-        else span.innerHTML = '🔴 SHOULD BE UP';
+        span.innerHTML = '<span style="color: #ff3030;" class="pulse">🔴 KILLED</span>';
     });
 }
 
+// ============================================
+// DRAG & DROP
+// ============================================
 // ============================================
 // DRAG & DROP
 // ============================================
@@ -378,7 +370,7 @@ document.addEventListener("contextmenu", function(e) {
         document.getElementById("bossDungeon").innerText = "---";
         document.getElementById("bossType").innerText = "---";
         document.getElementById("lastKill").innerText = "---";
-        document.getElementById("bossStatus").innerText = "NEW";
+        document.getElementById("bossStatus").innerText = "READY";
         document.getElementById("elapsed").innerText = "00:00:00";
         document.getElementById("historyList").innerHTML = "";
     }
@@ -389,10 +381,10 @@ document.addEventListener("contextmenu", function(e) {
 });
 
 function addBoss() {
-    let name = prompt("Boss name:");
+    let name = prompt("Nazwa bossa:");
     if (!name) return;
-    let dungeon = prompt("Dungeon / Region:", "Unknown");
-    let type = prompt("Type (PvP / Mini / Peace):", "PvP");
+    let dungeon = prompt("Dungeon / Lokacja:", "Unknown");
+    let type = prompt("Typ (PvP / Mini / Peace):", "PvP");
 
     bosses.push({ id: Date.now(), name: name, dungeon: dungeon, type: type, x: 50, y: 50 });
     saveAllData();
@@ -402,6 +394,7 @@ function addBoss() {
 document.getElementById("killButton").onclick = saveKill;
 document.getElementById("manualKill").onclick = addManualKill;
 document.getElementById("addBoss").onclick = addBoss;
+document.getElementById("resetBossState").onclick = resetBossToBlue;
 
 // ============================================
 // START I INTERWAŁY AUTOMATYCZNE
@@ -412,8 +405,6 @@ updateClock();
 setInterval(updateElapsed, 1000);
 setInterval(updateClock, 1000);
 setInterval(updateStatus, 1000);
-setInterval(updateMapTimers, 2000);  // Sprawdzanie chmury co 2 sekundy
-setInterval(loadAllData, 5000); // Pobiera listę bossów i ich pozycje z chmury co 5 sekund
-
-setInterval(updateBossStates, 6000); // Odświeżanie kolorów co 6 sekund
-
+setInterval(updateMapTimers, 1000);  // Sprawdzanie chmury co 1 sekundę
+setInterval(updateBossStates, 1000); // Odświeżanie kolorów co 1 sekundę
+setInterval(loadAllData, 1000);      // Błyskawiczna synchronizacja struktury co 1 sekundę
