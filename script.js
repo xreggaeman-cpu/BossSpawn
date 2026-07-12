@@ -437,4 +437,4 @@ setInterval(updateClock, 1000);
 setInterval(updateStatus, 1000);
 setInterval(updateMapTimers, 1000);  // Sprawdzanie chmury co 1 sekundę
 setInterval(updateBossStates, 1000); // Odświeżanie kolorów co 1 sekundę
-setInterval(loadAllData, 1000);      // Błyskawiczna synchronizacja struktury co 1 sekundę
+setInterval(loadAllData, 10000);      // Błyskawiczna synchronizacja struktury co 1 sekundę
