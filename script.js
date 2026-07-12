@@ -24,6 +24,12 @@ function loadAllData() {
         .then(data => {
             if (data) {
                 bosses = data;
+                
+                // POPRAWKA: Jeśli miałeś wybranego bossa, upewniamy się, że obiekt referencji wciąż istnieje
+                if (selectedBoss) {
+                    let updatedBoss = bosses.find(b => b.id === selectedBoss.id);
+                    if (updatedBoss) selectedBoss = updatedBoss;
+                }
             } else {
                 bosses = JSON.parse(JSON.stringify(defaultBosses));
                 saveAllData();
@@ -32,6 +38,7 @@ function loadAllData() {
         })
         .catch(err => console.error("Błąd pobierania struktury bossów:", err));
 }
+
 
 function saveAllData() {
     fetch(`${FIREBASE_URL}bosses.json`, {
@@ -406,5 +413,7 @@ setInterval(updateElapsed, 1000);
 setInterval(updateClock, 1000);
 setInterval(updateStatus, 1000);
 setInterval(updateMapTimers, 2000);  // Sprawdzanie chmury co 2 sekundy
+setInterval(loadAllData, 5000); // Pobiera listę bossów i ich pozycje z chmury co 5 sekund
+
 setInterval(updateBossStates, 6000); // Odświeżanie kolorów co 6 sekund
 
