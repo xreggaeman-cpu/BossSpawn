@@ -274,6 +274,7 @@ function updateMapTimers() {
             }
 
             data.sort((a, b) => b - a);
+            // KLUCZOWA POPRAWKA: Pobieramy data[0] zamiast całej tablicy data
             let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
             
             timerEl.innerText = "KILLED " + secondsToString(diffInSeconds) + " AGO";
@@ -291,7 +292,7 @@ function updateBossStates() {
                 icon.classList.add("blue");
                 return;
             }
-            // Jeśli jest jakakolwiek historia killi, boss jest czerwony i pulsuje
+            // Jeśli jest jakakolwiek historia killi, boss staje się pulsujący i czerwony
             icon.classList.add("red");
             icon.classList.add("pulse");
         });
@@ -312,9 +313,6 @@ function updateStatus() {
     });
 }
 
-// ============================================
-// DRAG & DROP
-// ============================================
 // ============================================
 // DRAG & DROP
 // ============================================
@@ -352,7 +350,6 @@ document.addEventListener("mousemove", function(e) {
     }
 });
 
-// Usunięcie bossa z chmury
 document.addEventListener("contextmenu", function(e) {
     if (!e.target.classList.contains("boss")) return;
     e.preventDefault();
