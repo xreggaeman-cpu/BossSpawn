@@ -3,7 +3,7 @@
 // ============================================
 
 // KONFIGURACJA CHMURY - Tutaj wklej link skopiowany ze swojej konsoli Firebase!
-const FIREBASE_URL = "TUTAJ_WKLEJ_SWOJ_LINK_Z_FIREBASE/";
+const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
 
 // Baza danych domyślnych bossów (jeśli baza w chmurze jest całkowicie pusta)
 const defaultBosses = [
