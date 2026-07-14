@@ -14,6 +14,9 @@ let bosses = [];
 let selectedBoss = null;
 const layer = document.getElementById("bossLayer");
 
+// Słownik zapobiegający ciągłemu zapętlaniu się głosu lektora w tej samej sekundzie
+let triggeredAlerts = {};
+
 // ============================================
 // SYNCHRONIZACJA Z BAZĄ DANYCH W CHMURZE
 // ============================================
@@ -31,7 +34,19 @@ function loadAllData() {
                 
                 if (selectedBoss) {
                     let updatedBoss = bosses.find(b => b.id === selectedBoss.id);
-                    if (updatedBoss) selectedBoss = updatedBoss;
+                    if (updatedBoss) {
+                        selectedBoss = updatedBoss;
+                        // Aktualizacja napisów konfiguracji w panelu bocznym
+                        let respMinutes = selectedBoss.respawnMinutes || 240;
+                        let h = Math.floor(respMinutes / 60);
+                        let m = respMinutes % 60;
+                        if (document.getElementById("bossRespawnTime")) {
+                            document.getElementById("bossRespawnTime").innerText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+                        }
+                        if (document.getElementById("bossVoiceAlertStatus")) {
+                            document.getElementById("bossVoiceAlertStatus").innerText = selectedBoss.voiceEnabled ? "🔊 WŁĄCZONE" : "🔇 WYŁĄCZONE";
+                        }
+                    }
                 }
             } else {
                 bosses = JSON.parse(JSON.stringify(defaultBosses));
@@ -79,6 +94,9 @@ function saveKillToCloud(bossId, timestamp) {
             });
         })
         .then(() => {
+            if (triggeredAlerts[bossId]) {
+                delete triggeredAlerts[bossId];
+            }
             if (selectedBoss && selectedBoss.id === bossId) {
                 loadHistory();
             }
@@ -130,6 +148,17 @@ function selectBoss(boss) {
     document.getElementById("bossName").innerText = boss.name;
     document.getElementById("bossDungeon").innerText = boss.dungeon;
     document.getElementById("bossType").innerText = boss.type;
+
+    // Prawidłowe ładowanie informacji o ustawieniach dynamicznych bosa
+    let respMinutes = boss.respawnMinutes || 240;
+    let h = Math.floor(respMinutes / 60);
+    let m = respMinutes % 60;
+    if (document.getElementById("bossRespawnTime")) {
+        document.getElementById("bossRespawnTime").innerText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    }
+    if (document.getElementById("bossVoiceAlertStatus")) {
+        document.getElementById("bossVoiceAlertStatus").innerText = boss.voiceEnabled ? "🔊 WŁĄCZONE" : "🔇 WYŁĄCZONE";
+    }
 
     loadHistory();
     updateElapsed();
@@ -202,6 +231,9 @@ function resetBossToBlue() {
             });
         })
         .then(() => {
+            if (triggeredAlerts[currentId]) {
+                delete triggeredAlerts[currentId];
+            }
             loadHistory();
             updateElapsed();
             updateBossStates();
@@ -209,6 +241,40 @@ function resetBossToBlue() {
             updateMapTimers();
         })
         .catch(err => console.error("Błąd podczas resetowania bossa:", err));
+}
+
+function configureBossAlert() {
+    if (selectedBoss == null) {
+        alert("First select a boss from the map!");
+        return;
+    }
+
+    let currentMinutes = selectedBoss.respawnMinutes || 240;
+    let minutesInput = prompt(`Enter respawn time in MINUTES for ${selectedBoss.name}:\n(np. 1h 30m = 90, 4h = 240)`, currentMinutes);
+    if (minutesInput === null) return; 
+    
+    let minutes = Number(minutesInput);
+    if (isNaN(minutes) || minutes <= 0) {
+        alert("Please enter a valid number of minutes!");
+        return;
+    }
+
+    let currentVoice = selectedBoss.voiceEnabled ? "yes" : "no";
+    let voiceInput = prompt(`Enable voice alert for ${selectedBoss.name}? (type: yes / no)`, currentVoice);
+    if (voiceInput === null) return; 
+
+    let voiceEnabled = (voiceInput.toLowerCase() === "yes" || voiceInput.toLowerCase() === "y" || voiceInput.toLowerCase() === "tak" || voiceInput.toLowerCase() === "t");
+
+    selectedBoss.respawnMinutes = minutes;
+    selectedBoss.voiceEnabled = voiceEnabled;
+
+    let h = Math.floor(minutes / 60);
+    let m = minutes % 60;
+    document.getElementById("bossRespawnTime").innerText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    document.getElementById("bossVoiceAlertStatus").innerText = voiceEnabled ? "🔊 WŁĄCZONE" : "🔇 WYŁĄCZONE";
+
+    saveAllData();
+    alert(`Settings saved for ${selectedBoss.name}!`);
 }
 
 function loadHistory() {
@@ -221,14 +287,6 @@ function loadHistory() {
             list.innerHTML = "";
             
             // Odrzucamy znacznik resetu (0) przy wyświetlaniu listy historycznej w panelu
-            let realHistory = data.filter(time => time !== 0);
-
-            if (realHistory.length == 0) {
-                list.innerHTML = "<li>No history</li>";
-                document.getElementById("lastKill").innerText = "---";
-                return;
-            }
-
             realHistory.sort((a, b) => b - a);
             document.getElementById("lastKill").innerText = formatDate(new Date(realHistory[0]));
 
@@ -264,6 +322,30 @@ function loadHistory() {
 // ============================================
 function formatDate(date) {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+}
+
+function playVoiceAlert(bossName, dungeonName) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const messageText = `10 minut do spawnu bossa ${bossName}. Dungeon ${dungeonName}`;
+        const utterance = new SpeechSynthesisUtterance(messageText);
+        utterance.lang = 'pl-PL';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+    } else {
+        console.warn("Twoja przeglądarka nie obsługuje syntezatora mowy.");
+    }
+}
+
+// WYMUSZONY TEST AUDIO DO SPRAWDZENIA CZY PRZEGLĄDARKA SŁYSZY STRONĘ
+function testVoiceAlertDirectly() {
+    if (selectedBoss == null) {
+        alert("Najpierw kliknij jakiegoś bossa na mapie, żeby go zaznaczyć!");
+        return;
+    }
+    alert("Próbuję odtworzyć dźwięk mowy. Jeśli usłyszysz lektora, system działa.");
+    playVoiceAlert(selectedBoss.name, selectedBoss.dungeon);
 }
 
 function secondsToString(sec) {
@@ -311,9 +393,22 @@ function updateMapTimers() {
 
             data.sort((a, b) => b - a);
             let diffInSeconds = Math.floor((Date.now() - data[0]) / 1000);
-            
-            timerEl.innerText = "KILLED " + secondsToString(diffInSeconds) + " AGO";
+            let muteStatus = boss.voiceEnabled ? " 🔊" : " 🔇";
+            timerEl.innerText = "KILLED " + secondsToString(diffInSeconds) + " AGO" + muteStatus;
             timerEl.style.color = "#ff3030";
+
+            // SYSTEM ODLICZANIA I WYWOŁANIA GŁOSU
+            let respawnMinutes = boss.respawnMinutes || 240;
+            let totalRespawnSeconds = respawnMinutes * 60;
+            let alertTimeSeconds = totalRespawnSeconds - 600; // Dokładnie 10 minut przed końcem
+
+            if (diffInSeconds === alertTimeSeconds && boss.voiceEnabled === true) {
+                let lastKillTime = data[0];
+                if (triggeredAlerts[boss.id] !== lastKillTime) {
+                    playVoiceAlert(boss.name, boss.dungeon);
+                    triggeredAlerts[boss.id] = lastKillTime; // Zabezpieczenie przed zapętleniem sekundy
+                }
+            }
         });
     });
 }
@@ -339,10 +434,10 @@ function updateStatus() {
 
     fetchBossHistory(selectedBoss.id, (data) => {
         if (data.length == 0 || data[0] === 0) {
-            span.innerHTML = '<span style="color: #3b82f6;">🔵 READY</span>';
+            span.innerHTML = '🔵 READY';
             return;
         }
-        span.innerHTML = '<span style="color: #ff3030;" class="pulse">🔴 KILLED</span>';
+        span.innerHTML = '🔴 KILLED';
     });
 }
 
@@ -416,7 +511,22 @@ function addBoss() {
     let dungeon = prompt("Dungeon / Region:", "Unknown");
     let type = prompt("Type (PvP / Mini / Peace):", "PvP");
 
-    bosses.push({ id: Date.now(), name: name, dungeon: dungeon, type: type, x: 50, y: 50 });
+    let minutesInput = prompt("Enter respawn time in MINUTES:\n(np. 1h 30m = 90, 4h = 240)", "240");
+    let minutes = Number(minutesInput) || 240;
+
+    let voicePrompt = prompt("Enable voice alert 10m before spawn? (type: yes / no)", "no");
+    let voiceEnabled = (voicePrompt && (voicePrompt.toLowerCase() === "yes" || voicePrompt.toLowerCase() === "y" || voicePrompt.toLowerCase() === "tak" || voicePrompt.toLowerCase() === "t"));
+
+    bosses.push({
+        id: Date.now(),
+        name: name,
+        dungeon: dungeon,
+        type: type,
+        x: 50,
+        y: 50,
+        respawnMinutes: minutes,
+        voiceEnabled: voiceEnabled
+    });
     saveAllData();
     loadBosses();
 }
@@ -425,6 +535,7 @@ document.getElementById("killButton").onclick = saveKill;
 document.getElementById("manualKill").onclick = addManualKill;
 document.getElementById("addBoss").onclick = addBoss;
 document.getElementById("resetBossState").onclick = resetBossToBlue;
+document.getElementById("configureVoiceButton").onclick = configureBossAlert;
 
 // ============================================
 // START I INTERWAŁY AUTOMATYCZNE
@@ -435,6 +546,5 @@ updateClock();
 setInterval(updateElapsed, 1000);
 setInterval(updateClock, 1000);
 setInterval(updateStatus, 1000);
-setInterval(updateMapTimers, 1000);  // Sprawdzanie chmury co 1 sekundę
-setInterval(updateBossStates, 1000); // Odświeżanie kolorów co 1 sekundę
-setInterval(loadAllData, 10000);      // Błyskawiczna synchronizacja struktury co 1 sekundę
+setInterval(updateMapTimers, 1000);
+setInterval(updateBossStates, 1000);
