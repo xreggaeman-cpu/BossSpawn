@@ -150,7 +150,7 @@ function addManualKill() {
         return;
     }
 
-    let value = prompt("Time kill\nlike:\n23:30");
+    let value = prompt("Time kill\nfor example:\n23:30");
     if (value == null || value.trim() == "") return;
 
     let split = value.split(":");
@@ -179,10 +179,10 @@ function addManualKill() {
 
 function resetBossToBlue() {
     if (selectedBoss == null) {
-        alert("Najpierw wybierz bossa na mapie!");
+        alert("First choose boss!");
         return;
     }
-    if (!confirm(`Zresetować wizualnie bossa: ${selectedBoss.name} do stanu READY bez kasowania historii?`)) return;
+    if (!confirm(`Reset Boss: ${selectedBoss.name} to READY without deleting history?`)) return;
 
     let currentId = selectedBoss.id;
     
@@ -236,10 +236,10 @@ function loadHistory() {
                 let li = document.createElement("li");
                 li.innerText = formatDate(new Date(time));
                 li.style.cursor = "pointer";
-                li.title = "Kliknij, aby usunąć ten wpis";
+                li.title = "Click to remove this entry";
                 
                 li.onclick = function() {
-                    if (!confirm(`Usunąć ten wpis z historii:\n${formatDate(new Date(time))}?`)) return;
+                    if (!confirm(`Remove this entry:\n${formatDate(new Date(time))}?`)) return;
                     
                     let origIndex = data.indexOf(time);
                     if (origIndex !== -1) data.splice(origIndex, 1);
