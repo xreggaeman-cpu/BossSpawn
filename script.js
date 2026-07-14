@@ -4,6 +4,7 @@
 
 // KONFIGURACJA CHMURY - Twój oryginalny link z Firebase
 const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
+// ============================================
 
 
 // Baza danych domyślnych bossów (jeśli baza w chmurze jest całkowicie pusta)
@@ -26,12 +27,10 @@ const layer = document.getElementById("bossLayer");
 function syncWithCloud() {
     if (dragBoss !== null) return;
 
-    // Pobieramy cały główny węzeł bazy danych z cache bustingiem
     fetch(`${FIREBASE_URL}.json?t=${Date.now()}`)
         .then(res => res.json())
         .then(data => {
             if (!data) {
-                // Jeśli baza jest całkowicie pusta, inicjalizujemy domyślne dane
                 bosses = JSON.parse(JSON.stringify(defaultBosses));
                 cachedHistory = {};
                 saveBossesList();
@@ -39,29 +38,24 @@ function syncWithCloud() {
                 return;
             }
 
-            // Aktualizujemy pamięć podręczną z danych z chmury
             bosses = data.bosses || [];
             cachedHistory = data.history || {};
 
-            // Odświeżamy referencję wybranego bossa, jeśli jakiś jest zaznaczony
             if (selectedBoss) {
                 let updatedBoss = bosses.find(b => b.id === selectedBoss.id);
                 if (updatedBoss) selectedBoss = updatedBoss;
             }
 
-            // Zapobiega ciągłemu czyszczeniu mapy, jeśli liczba bossów się nie zmieniła
             const activeIcons = document.querySelectorAll(".boss");
             if (activeIcons.length !== bosses.length) {
                 renderBossesOnMap();
             } else {
-                // Jeśli liczba się zgadza, tylko odświeżamy teksty i kolory na ekranie
                 updateUIComponents();
             }
         })
         .catch(err => console.error("Błąd globalnej synchronizacji:", err));
 }
 
-// Zapisuje wyłącznie strukturę, pozycje i ustawienia czasu bossów
 function saveBossesList() {
     fetch(`${FIREBASE_URL}bosses.json`, {
         method: "PUT",
@@ -69,7 +63,6 @@ function saveBossesList() {
     }).catch(err => console.error("Błąd zapisu pozycji i konfiguracji:", err));
 }
 
-// Lokalny pomocnik - pobiera historię bezpośrednio z pamięci RAM zamiast z sieci
 function getLocalHistory(bossId) {
     return cachedHistory[`boss_${bossId}`] || [];
 }
@@ -84,17 +77,15 @@ function saveKillToCloud(bossId, timestamp) {
     history.unshift(timestamp);
     history.sort((a, b) => b - a);
 
-    // Wysyłamy zmienioną historię dla konkretnego bossa
     fetch(`${FIREBASE_URL}history/boss_${bossId}.json`, {
         method: "PUT",
         body: JSON.stringify(history)
     })
     .then(() => {
-        // Aktualizujemy lokalny cache natychmiast, żeby UI nie czekało na kolejny cykl syncWithCloud
         cachedHistory[`boss_${bossId}`] = history;
         
         let currentBoss = bosses.find(b => b.id === bossId);
-        if (currentBoss) currentBoss.voiceAlertTriggered = false; // Gotowy na nowy alert mowy
+        if (currentBoss) currentBoss.voiceAlertTriggered = false;
 
         updateUIComponents();
         if (selectedBoss && selectedBoss.id === bossId) {
@@ -146,7 +137,6 @@ function selectBoss(boss) {
     document.getElementById("bossDungeon").innerText = boss.dungeon;
     document.getElementById("bossType").innerText = boss.type;
 
-    // Przeliczanie minut na czytelny format Xh Ym w panelu bocznym
     let respTimeText = "Not set";
     if (boss.respawnMinutes) {
         let h = Math.floor(boss.respawnMinutes / 60);
@@ -223,7 +213,7 @@ function resetBossToBlue() {
         cachedHistory[`boss_${currentId}`] = history;
         
         let currentBoss = bosses.find(b => b.id === currentId);
-        if (currentBoss) currentBoss.voiceAlertTriggered = false; // Reset flagi alertu mowy
+        if (currentBoss) currentBoss.voiceAlertTriggered = false;
 
         renderHistoryListUI();
         updateUIComponents();
@@ -232,24 +222,40 @@ function resetBossToBlue() {
 }
 
 function configureBossAlert() {
-    alert("Uruchamiam test głosu. Kliknij OK i posłuchaj głośników...");
-    
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Kasuje ewentualną kolejkę
-        
-        const testUtterance = new SpeechSynthesisUtterance("Test systemu mowy. Jeśli mnie słyszysz, powiadomienia głosowe działają poprawnie.");
-        testUtterance.lang = 'pl-PL';
-        testUtterance.rate = 1.0;
-        testUtterance.pitch = 1.0;
-        
-        window.speechSynthesis.speak(testUtterance);
-    } else {
-        alert("Twoja przeglądarka blokuje syntezator mowy!");
+    if (selectedBoss == null) {
+        alert("First select a boss from the map!");
+        return;
     }
+
+    let currentMinutes = selectedBoss.respawnMinutes || 240;
+    let minutesInput = prompt(`Enter respawn time in MINUTES for ${selectedBoss.name}:\n(np. 1h 30m = 90, 4h = 240)`, currentMinutes);
+    if (minutesInput === null) return; 
+    
+    let minutes = Number(minutesInput);
+    if (isNaN(minutes) || minutes <= 0) {
+        alert("Please enter a valid number of minutes!");
+        return;
+    }
+
+    let currentVoice = selectedBoss.voiceEnabled ? "yes" : "no";
+    let voiceInput = prompt(`Enable voice alert for ${selectedBoss.name}? (type: yes / no)`, currentVoice);
+    if (voiceInput === null) return; 
+
+    let voiceEnabled = (voiceInput.toLowerCase() === "yes" || voiceInput.toLowerCase() === "y" || voiceInput.toLowerCase() === "tak" || voiceInput.toLowerCase() === "t");
+
+    selectedBoss.respawnMinutes = minutes;
+    selectedBoss.voiceEnabled = voiceEnabled;
+
+    let h = Math.floor(minutes / 60);
+    let m = minutes % 60;
+    document.getElementById("bossRespawnTime").innerText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    document.getElementById("bossVoiceAlertStatus").innerText = voiceEnabled ? "🔊 ON (10m before)" : "🔇 OFF";
+
+    saveBossesList();
+    updateUIComponents();
+    alert(`Settings saved for ${selectedBoss.name}!`);
 }
 
-
-// Odpowiada tylko za wygenerowanie elementów <li> w panelu bocznym
 function renderHistoryListUI() {
     if (selectedBoss == null) return;
     let list = document.getElementById("historyList");
@@ -267,6 +273,42 @@ function renderHistoryListUI() {
     }
 
     realHistory.sort((a, b) => b - a);
+    document.getElementById("lastKill").innerText = formatDate(new Date(realHistory[0]));
+
+    realHistory.forEach((time) => {
+        let li = document.createElement("li");
+        li.innerText = formatDate(new Date(time));
+        li.style.cursor = "pointer";
+        li.title = "Click to remove this entry";
+
+        li.onclick = function() {
+            if (!confirm(`Remove this entry:\n${formatDate(new Date(time))}?`)) return;
+            
+            let updatedData = JSON.parse(JSON.stringify(data));
+            let origIndex = updatedData.indexOf(time);
+            if (origIndex !== -1) updatedData.splice(origIndex, 1);
+
+            fetch(`${FIREBASE_URL}history/boss_${currentId}.json`, {
+                method: "PUT",
+                body: JSON.stringify(updatedData)
+            }).then(() => {
+                cachedHistory[`boss_${currentId}`] = updatedData;
+                renderHistoryListUI();
+                updateUIComponents();
+            });
+        };
+        list.appendChild(li);
+    });
+}
+
+// ============================================
+// FORMATOWANIE CZASU I LIVE TIMERY (ZAKAZ FETCH!)
+// ============================================
+function formatDate(date) {
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+}
+
+function playVoiceAlert(bossName, dungeonName) {
 function playVoiceAlert(bossName, dungeonName) {
     if ('speechSynthesis' in window) {
         const messageText = `10 minut do spawnu bossa ${bossName}. Dungeon ${dungeonName}`;
