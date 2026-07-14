@@ -206,7 +206,7 @@ function resetBossToBlue() {
             updateStatus();
             updateMapTimers();
         })
-        .catch(err => console.error("Błąd podczas resetowania bossa:", err));
+        .catch(err => console.error("Error while resetting the boss:", err));
 }
 
 // NOWY BEZDOTYKOWY KONFIGURATOR DLA SIDEBARU Z KROKU POPRZEDNIEGO
@@ -217,17 +217,17 @@ function configureBossAlert() {
     }
 
     let currentMinutes = selectedBoss.respawnMinutes || 240;
-    let minutesInput = prompt(`Ustawienia dla: ${selectedBoss.name}\n\nPodaj czas odrodzenia w MINUTACH:\n(np. 1h 30m = 90, 4h = 240)`, currentMinutes);
+    let minutesInput = prompt(`Settings for: ${selectedBoss.name}\n\nEnter the respawn time in MINUTES.:\n(np. 1h 30m = 90, 4h = 240)`, currentMinutes);
     if (minutesInput === null) return; 
     
     let minutes = Number(minutesInput);
     if (isNaN(minutes) || minutes <= 0) {
-        alert("Podaj poprawną liczbę minut!");
+        alert("Please enter the correct number of minutes!");
         return;
     }
 
-    let currentVoice = selectedBoss.voiceEnabled ? "tak" : "nie";
-    let voiceInput = prompt(`Czy włączyć lektora 10 min przed spawnem dla ${selectedBoss.name}?\n(wpisz: tak / nie)`, currentVoice);
+    let currentVoice = selectedBoss.voiceEnabled ? "yes" : "no";
+    let voiceInput = prompt(`Whether to turn on the voice-over 10 minutes before spawn for ${selectedBoss.name}?\n(enter: yes / no)`, currentVoice);
     if (voiceInput === null) return; 
 
     let voiceEnabled = (voiceInput.toLowerCase() === "tak" || voiceInput.toLowerCase() === "t" || voiceInput.toLowerCase() === "yes" || voiceInput.toLowerCase() === "y");
@@ -236,7 +236,7 @@ function configureBossAlert() {
     selectedBoss.voiceEnabled = voiceEnabled;
 
     saveAllData();
-    alert(`Ustawienia zapisane! Głos: ${voiceEnabled ? "WŁĄCZONY" : "WYŁĄCZONY"}`);
+    alert(`Settings saved! Voice: ${voiceEnabled ? "ON" : "OFF"}`);
 }
 
 function loadHistory() {
@@ -296,16 +296,21 @@ function formatDate(date) {
 function playVoiceAlert(bossName, dungeonName) {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const messageText = `10 minut do spawnu bossa ${bossName}. Dungeon ${dungeonName}`;
+        
+        // Komunikat bez nazwy bossa - lektor czyta tylko lokację (dungeon)
+        const messageText = `Attention. Elite boss will respawn in ten minutes at ${dungeonName}.`;
         const utterance = new SpeechSynthesisUtterance(messageText);
-        utterance.lang = 'pl-PL';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
+        
+        utterance.lang = 'en-US'; // Amerykański akcent
+        utterance.rate = 0.9;     // Lekko zwolnione tempo
+        utterance.pitch = 0.9;    // Poważniejszy ton lektora
+
         window.speechSynthesis.speak(utterance);
     } else {
-console.warn("Twoja przeglądarka nie obsługuje syntezatora mowy.");
+        console.warn("Your browser does not support text-to-speech synthesis.");
     }
 }
+
 
 function secondsToString(sec) {
     let h = Math.floor(sec / 3600);
