@@ -287,7 +287,16 @@ function loadHistory() {
             list.innerHTML = "";
             
             // Odrzucamy znacznik resetu (0) przy wyświetlaniu listy historycznej w panelu
+            let realHistory = data.filter(time => time !== 0);
+
+            if (realHistory.length == 0) {
+                list.innerHTML = "<li>No history</li>";
+                document.getElementById("lastKill").innerText = "---";
+                return;
+            }
+
             realHistory.sort((a, b) => b - a);
+            // NAPRAWIONE: Pobieramy pierwszy indeks, zamiast całej tablicy
             document.getElementById("lastKill").innerText = formatDate(new Date(realHistory[0]));
 
             realHistory.forEach((time, index) => {
@@ -316,6 +325,7 @@ function loadHistory() {
         }
     });
 }
+
 
 // ============================================
 // FORMATOWANIE CZASU I LIVE TIMERY
