@@ -237,44 +237,22 @@ function resetBossToBlue() {
 }
 
 function configureBossAlert() {
-    if (selectedBoss == null) {
-        alert("First select a boss from the map!");
-        return;
-    }
-
-    // 1. Pytanie o czas respawnu w minutach (domyślnie 240 minut, czyli 4h)
-    let currentMinutes = selectedBoss.respawnMinutes || 240;
-    let minutesInput = prompt(`Enter respawn time in MINUTES for ${selectedBoss.name}:\n(np. 1h 30m = 90, 4h = 240)`, currentMinutes);
-    if (minutesInput === null) return; 
+    alert("Uruchamiam test głosu. Kliknij OK i posłuchaj głośników...");
     
-    let minutes = Number(minutesInput);
-    if (isNaN(minutes) || minutes <= 0) {
-        alert("Please enter a valid number of minutes!");
-        return;
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Kasuje ewentualną kolejkę
+        
+        const testUtterance = new SpeechSynthesisUtterance("Test systemu mowy. Jeśli mnie słyszysz, powiadomienia głosowe działają poprawnie.");
+        testUtterance.lang = 'pl-PL';
+        testUtterance.rate = 1.0;
+        testUtterance.pitch = 1.0;
+        
+        window.speechSynthesis.speak(testUtterance);
+    } else {
+        alert("Twoja przeglądarka blokuje syntezator mowy!");
     }
-
-    // 2. Pytanie o aktywację powiadomień głosowych
-    let currentVoice = selectedBoss.voiceEnabled ? "yes" : "no";
-    let voiceInput = prompt(`Enable voice alert for ${selectedBoss.name}? (type: yes / no)`, currentVoice);
-    if (voiceInput === null) return; 
-
-    let voiceEnabled = (voiceInput.toLowerCase() === "yes" || voiceInput.toLowerCase() === "y" || voiceInput.toLowerCase() === "tak" || voiceInput.toLowerCase() === "t");
-
-    // Zapisanie konfiguracji minutowej w pamięci podręcznej obiektu bossa
-    selectedBoss.respawnMinutes = minutes;
-    selectedBoss.voiceEnabled = voiceEnabled;
-
-    // Natychmiastowe odświeżenie tekstu konfiguracji w bocznej ramce panelu
-    let h = Math.floor(minutes / 60);
-    let m = minutes % 60;
-    document.getElementById("bossRespawnTime").innerText = h > 0 ? `${h}h ${m}m` : `${m}m`;
-    document.getElementById("bossVoiceAlertStatus").innerText = voiceEnabled ? "🔊 ON (10m before)" : "🔇 OFF";
-
-    // Zapis zmian parametrów bossa bezpośrednio do bazy w chmurze
-    saveBossesList();
-    updateUIComponents();
-    alert(`Settings saved for ${selectedBoss.name}!`);
 }
+
 
 // Odpowiada tylko za wygenerowanie elementów <li> w panelu bocznym
 function renderHistoryListUI() {
