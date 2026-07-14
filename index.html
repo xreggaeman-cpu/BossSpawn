@@ -30,6 +30,11 @@
                 <p>Name: <span id="bossName">---</span></p>
                 <p>Dungeon: <span id="bossDungeon">---</span></p>
                 <p>Type: <span id="bossType">---</span></p>
+                
+                <!-- NOWE: Dynamiczne pola informacyjne o konfiguracji alarmu -->
+                <p>Respawn Time: <span id="bossRespawnTime">---</span></p>
+                <p>Voice Alert: <span id="bossVoiceAlertStatus">---</span></p>
+                
                 <p>Last Kill: <span id="lastKill">---</span></p>
                 <p>Status: <span id="bossStatus">READY</span></p>
                 <p>Elapsed: <span id="elapsed">00:00:00</span></p>
@@ -40,6 +45,8 @@
                 <!-- Ostylowana grupa dodatkowych przycisków zarządzania chmurą -->
                 <div class="button-group">
                     <button id="manualKill">ADD KILL TIME</button>
+                    <!-- NOWE: Przycisk otwierający okno konfiguracji minutowej i głosu -->
+                    <button id="configureVoiceButton" style="background: #6366f1;">CONFIGURE ALERT</button>
                     <button id="resetBossState">RESET TO BLUE</button>
                     <button id="addBoss">ADD BOSS</button>
                 </div>
