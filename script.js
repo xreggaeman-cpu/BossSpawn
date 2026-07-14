@@ -4,8 +4,6 @@
 
 // KONFIGURACJA CHMURY - Twój oryginalny link z Firebase
 const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
-// ============================================
-
 
 // Baza danych domyślnych bossów (jeśli baza w chmurze jest całkowicie pusta)
 const defaultBosses = [
@@ -302,13 +300,14 @@ function renderHistoryListUI() {
 }
 
 // ============================================
-// FORMATOWANIE CZASU I LIVE TIMERY (ZAKAZ FETCH!)
+// FORMATOWANIE CZASU I LIVE TIMERY
 // ============================================
 function formatDate(date) {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 }
 
 function playVoiceAlert(bossName, dungeonName) {
+    if ('speechSynthesis' in window) {
 function playVoiceAlert(bossName, dungeonName) {
     if ('speechSynthesis' in window) {
         const messageText = `10 minut do spawnu bossa ${bossName}. Dungeon ${dungeonName}`;
@@ -320,6 +319,16 @@ function playVoiceAlert(bossName, dungeonName) {
     } else {
         console.warn("Twoja przeglądarka nie obsługuje syntezatora mowy.");
     }
+}
+
+// TYMCZASOWA FUNKCJA DO RĘCZNEGO TESTOWANIA GŁOSU PRZYCISKIEM
+function testVoiceAlertDirectly() {
+    if (selectedBoss == null) {
+        alert("Najpierw kliknij jakiegoś bossa na mapie, żeby go zaznaczyć!");
+        return;
+    }
+    alert("Próbuję odtworzyć dźwięk mowy. Upewnij się, że masz włączone głośniki...");
+    playVoiceAlert(selectedBoss.name, selectedBoss.dungeon);
 }
 
 function secondsToString(sec) {
@@ -507,11 +516,14 @@ function addBoss() {
     renderBossesOnMap();
 }
 
+// PRZYPISANIE AKCJI DO PRZYCISKÓW HTML
 document.getElementById("killButton").onclick = saveKill;
 document.getElementById("manualKill").onclick = addManualKill;
 document.getElementById("addBoss").onclick = addBoss;
 document.getElementById("resetBossState").onclick = resetBossToBlue;
-document.getElementById("configureVoiceButton").onclick = configureBossAlert;
+
+// UWAGA: fioletowy przycisk na chwilę konfigurujemy jako bezpośredni wymuszony test lektora
+document.getElementById("configureVoiceButton").onclick = testVoiceAlertDirectly;
 
 // ============================================
 // START I LOKALNE INTERWAŁY AUTOMATYCZNE
@@ -522,11 +534,3 @@ syncWithCloud();
 setInterval(updateUIComponents, 1000);
 setInterval(updateClock, 1000);
 setInterval(syncWithCloud, 5000);
-
-///
-///setInterval(updateElapsed, 1000);
-//setInterval(updateClock, 1000);
-//setInterval(updateStatus, 1000);
-//setInterval(updateMapTimers, 1000);  // Sprawdzanie chmury co 1 sekundę
-//setInterval(updateBossStates, 1000); // Odświeżanie kolorów co 1 sekundę
-//setInterval(loadAllData, 10000);      // Błyskawiczna synchronizacja struktury co 1 sekundę
