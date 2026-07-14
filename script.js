@@ -4,12 +4,7 @@
 
 // KONFIGURACJA CHMURY - Twój oryginalny link z Firebase
 const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
-// ============================================
-// TL ELITE BOSS TRACKER - FIREBASE LIVE SCRIPT
-// ============================================
 
-// KONFIGURACJA CHMURY - Twój oryginalny link z Firebase
-const FIREBASE_URL = "https://firebasedatabase.app";
 
 // Baza danych domyślnych bossów (jeśli baza w chmurze jest całkowicie pusta)
 const defaultBosses = [
