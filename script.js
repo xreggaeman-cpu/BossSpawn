@@ -22,6 +22,70 @@ let activeIndex = null;
 let triggeredAlerts = {};
 
 // ============================================
+// NOWOŚĆ: BEZBŁĘDNA OBSŁUGA DYNAMICZNEJ PODMIANY MAP PO KLIKNIĘCIU
+// ============================================
+
+function changeTacticalMap(type, filename, displayName) {
+    const worldMap = document.getElementById("worldMap");
+    const subMap = document.getElementById("subMap");
+    const svgOverlay = document.getElementById("svgOverlay");
+    const htmlOverlay = document.getElementById("htmlOverlay");
+    const backBtn = document.getElementById("backToWorldBtn");
+    const viewDisplay = document.getElementById("viewLocationName");
+    
+    // 1. Aktualizacja napisów na środku topbaru
+    viewDisplay.innerText = displayName.toUpperCase();
+    viewDisplay.style.color = "#ffd54f"; // Zmiana koloru na jaskrawy żółty dla celów taktycznych
+
+    // 2. Ładowanie odpowiedniego obrazu sub-mapy regionalnej lub dungeonu z folderu images/
+    if (type === 'region') {
+        subMap.src = `images/region-${filename}.png`;
+    } else if (type === 'dungeon') {
+        subMap.src = `images/dungeon-${filename}.png`;
+    }
+
+    // 3. Przełączenie widoczności warstw w oknie przeglądarki
+    worldMap.style.display = "none";
+    svgOverlay.style.display = "none";
+    htmlOverlay.style.display = "none";
+    
+    subMap.classList.remove("hide-submap");
+    if (backBtn) {
+        backBtn.classList.remove("hide-btn");
+        backBtn.classList.add("show-back-btn");
+    }
+}
+
+function resetToWorldMap() {
+    const worldMap = document.getElementById("worldMap");
+    const subMap = document.getElementById("subMap");
+    const svgOverlay = document.getElementById("svgOverlay");
+    const htmlOverlay = document.getElementById("htmlOverlay");
+    const backBtn = document.getElementById("backToWorldBtn");
+    const viewDisplay = document.getElementById("viewLocationName");
+
+    // Przywrócenie napisu WORLD MAP na środku paska
+    if (viewDisplay) {
+        viewDisplay.innerText = "WORLD MAP";
+        viewDisplay.style.color = "#00e676"; // Powrót do zielonego standardu
+    }
+
+    // Resetowanie widoczności głównych warstw mapy świata
+    if (worldMap) worldMap.style.display = "block";
+    if (svgOverlay) svgOverlay.style.display = "block";
+    if (htmlOverlay) htmlOverlay.style.display = "block";
+    
+    if (subMap) {
+        subMap.classList.add("hide-submap");
+        subMap.src = "";
+    }
+    if (backBtn) {
+        backBtn.classList.remove("show-back-btn");
+        backBtn.classList.add("hide-btn");
+    }
+}
+
+// ============================================
 // SYNCHRONIZACJA Z BAZĄ DANYCH FIREBASE
 // ============================================
 
@@ -54,7 +118,7 @@ function uploadDungeonState(id) {
 }
 
 // ============================================
-// LOGIKA SELEKCJI DUNGEONÓW I PODŚWIETLEŃ SIDEBARU
+// LOGIKA PANELU BOCZNEGO (SIDEBAR)
 // ============================================
 
 function selectDungeon(index) {
@@ -65,21 +129,20 @@ function selectDungeon(index) {
         else btn.classList.remove("active");
     });
 
-    // Resetowanie starych podświetleń
     document.querySelectorAll(".map-zone").forEach(p => {
         if (p.className && p.className.baseVal) {
             p.className.baseVal = p.className.baseVal.replace(/\bglow-\w+\b/g, "").trim();
         }
     });
 
-    // Świecenie obwódki strefy po kliknięciu w sidebar
     const targetZone = staticDungeons[index].zone;
     const pathEl = document.getElementById(`region-${targetZone}`);
     if (pathEl && pathEl.className && pathEl.className.baseVal) {
         pathEl.className.baseVal += ` glow-${targetZone}`;
     }
 
-    updateSidebarUI();
+    // NOWOŚĆ: Po kliknięciu dungeonu z listy automatycznie wywołujemy podmianę mapy na dungeon
+    changeTacticalMap('dungeon', staticDungeons[index].filename, staticDungeons[index].name);
 }
 
 function updateSidebarUI() {
@@ -99,7 +162,7 @@ function updateSidebarUI() {
 }
 
 // ============================================
-// REJESTRACJA KILLÓW I EDYCJA Z POZIOMU PANELU
+// STEROWANIE REJESTRACJĄ ZABÓJSTW
 // ============================================
 
 function registerKill() {
@@ -150,10 +213,6 @@ function manuallyChangeMinutes() {
     recalculateMapCounters();
 }
 
-// ============================================
-// PRZELICZANIE LICZNIKÓW W DÓŁ (COUNTDOWN TIMERY)
-// ============================================
-
 function recalculateMapCounters() {
     let activeZoneTimers = { yellow: null, purple: null, red: null, blue: null };
 
@@ -197,8 +256,6 @@ function recalculateMapCounters() {
                 timerEl.classList.remove("alert-active");
             }
         }
-    });
-
     if (activeIndex !== null) {
         const activeD = staticDungeons[activeIndex];
         const activeState = dungeonStates[`dungeon_${activeD.id}`];
@@ -212,10 +269,6 @@ function recalculateMapCounters() {
     }
 }
 
-// ============================================
-// POWIADOMIENIA AUDIO I DISCORD WEBHOOK
-// ============================================
-
 function playVoiceAlert(dungeonName) {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -227,10 +280,6 @@ function playVoiceAlert(dungeonName) {
         window.speechSynthesis.speak(utterance);
     }
 }
-
-document.getElementById("killBtn").onclick = registerKill;
-document.getElementById("editTimeBtn").onclick = manuallyChangeMinutes;
-document.getElementById("forceResetBtn").onclick = resetToReady;
 
 function sendDiscordNotification(dungeonName) {
     if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("TUTAJ_WKLEJ")) return;
@@ -255,7 +304,6 @@ function updateClock() {
     if (el) el.innerText = new Date().toLocaleTimeString();
 }
 
-// Inicjalizacja pętli odświeżania bazy i zegarów
 updateClock();
 syncTimersData();
 setInterval(updateClock, 1000);
