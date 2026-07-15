@@ -12,7 +12,7 @@ body {
 }
 
 #topbar {
-    height: 60px; /* Zmniejszona wysokość paska z 70px, żeby zyskać miejsce na dole */
+    height: 60px;
     background: #1a1a1a;
     border-bottom: 2px solid #333;
     display: flex;
@@ -47,13 +47,13 @@ body {
 }
 
 #sidebar {
-    width: 360px; /* Powrót do standardowej szerokości */
+    width: 360px;
     background: #1e1e1e;
     border-right: 2px solid #333;
     display: flex;
     flex-direction: column;
-    padding: 12px; /* Lekko ściśnięty padding */
-    justify-content: space-between; /* Wypycha panel sterowania na dół */
+    padding: 12px;
+    justify-content: space-between;
 }
 
 #sidebar h2 {
@@ -62,19 +62,18 @@ body {
     margin-bottom: 8px;
 }
 
-/* POWRÓT DO JEDNEJ KOLUMNY: Dungeony jeden pod drugim, zredukowane wymiary */
 .dungeon-grid {
     display: flex;
     flex-direction: column;
-    gap: 5px; /* Minimalny odstęp */
+    gap: 5px;
     flex: 1;
-    overflow: hidden; /* Zakaz suwaka dla całej listy */
+    overflow: hidden;
 }
 
 .sector-group {
     background: #252525;
     border-radius: 4px;
-    padding: 4px 8px; /* Bardzo zwarty padding */
+    padding: 4px 8px;
     border-left: 4px solid #444;
 }
 
@@ -96,7 +95,7 @@ body {
     background: #333;
     color: #fff;
     border: 1px solid #444;
-    padding: 5px 8px; /* Ściśnięty przycisk */
+    padding: 5px 8px;
     text-align: left;
     font-size: 13px;
     font-weight: bold;
@@ -110,13 +109,6 @@ body {
     border-color: #666;
 }
 
-.dungeon-btn.active {
-    background: #ffd54f;
-    color: #000;
-    border-color: #ffd54f;
-}
-
-/* Panel sterowania ciasno na dole */
 #controlPanel {
     background: #151515;
     border: 1px solid #333;
@@ -186,7 +178,7 @@ body {
 #forceResetBtn { background: #757575; }
 #forceResetBtn:hover { background: #9e9e9e; }
 
-/* REWELACYJNE DIZURNE PRZESUNIĘCIE MAPY: PROPORCJONALNE I BEZ CZARNYCH PASÓW */
+/* SEKCJA MAPY */
 #mapWrapper {
     flex: 1;
     position: relative;
@@ -205,43 +197,51 @@ body {
 #worldMap {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* MAPA ODZYSKUJE SŁODKIE PROPORCJE I NIE JEST ROZCIĄGNIĘTA */
+    object-fit: contain;
     background: #111;
     pointer-events: none;
+    user-select: none;
 }
 
-/* SVG Obramowania Regionów */
+/* INTERAKTYWNA WARSTWA REGINÓW (MYSZKA HOVER) */
 #svgOverlay {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
+    z-index: 5;
 }
 
-.region-border {
-    fill: rgba(255,255,255,0);
+.map-zone {
+    fill: rgba(255, 255, 255, 0); 
     stroke: transparent;
-    stroke-width: 6;
-    transition: stroke 0.3s, fill 0.3s;
+    stroke-width: 5;
+    cursor: pointer;
+    transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out;
+    pointer-events: auto; 
 }
 
-.region-border.glow-orange { stroke: #ff9800; fill: rgba(255, 152, 0, 0.04); animation: neonPulse 2s infinite ease-in-out; }
-.region-border.glow-red { stroke: #f44336; fill: rgba(244, 67, 54, 0.04); animation: neonPulse 2s infinite ease-in-out; }
-.region-border.glow-green { stroke: #4caf50; fill: rgba(76, 175, 80, 0.04); animation: neonPulse 2s infinite ease-in-out; }
-.region-border.glow-fiolet { stroke: #9c27b0; fill: rgba(156, 39, 176, 0.04); animation: neonPulse 2s infinite ease-in-out; }
-
-@keyframes neonPulse {
-    0% { stroke-opacity: 0.4; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
-    50% { stroke-opacity: 1; filter: drop-shadow(0 0 12px var(--glow-color, #fff)); }
-    100% { stroke-opacity: 0.4; filter: drop-shadow(0 0 2px rgba(255,255,255,0.2)); }
+/* Rozświetlanie perfekcyjnych kształtów wektorowych */
+.zone-yellow:hover {
+    fill: rgba(255, 235, 59, 0.15); 
+    stroke: #ffeb3b; 
 }
 
-.border-orange { --glow-color: #ff9800; }
-.border-red { --glow-color: #f44336; }
-.border-green { --glow-color: #4caf50; }
-.border-fiolet { --glow-color: #9c27b0; }
+.zone-purple:hover {
+    fill: rgba(156, 39, 176, 0.15); 
+    stroke: #e040fb; 
+}
+
+.zone-red:hover {
+    fill: rgba(244, 67, 54, 0.15); 
+    stroke: #ff5252; 
+}
+
+.zone-blue:hover {
+    fill: rgba(33, 150, 243, 0.15); 
+    stroke: #448aff; 
+}
 
 /* Liczniki na Mapie */
 #htmlOverlay {
@@ -251,6 +251,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 10;
 }
 
 .map-countdown-clock {
@@ -267,26 +268,10 @@ body {
     transform: translate(-50%, -50%);
 }
 
-.map-countdown-clock.alert-active {
-    border-color: #ff9800;
-    color: #ff9800;
-    animation: textFlash 1s infinite alternate;
-}
-
-.map-countdown-clock.ready-active {
-    border-color: #00e676;
-    color: #00e676;
-}
-
-@keyframes textFlash {
-    0% { opacity: 0.6; }
-    100% { opacity: 1; }
-}
-
-/* Pozycje zegarów nad regionami */
-#zone-timer-orange { left: 55%; top: 25%; }
-#zone-timer-red { left: 35%; top: 62%; }
-#zone-timer-green { left: 20%; top: 48%; }
-#zone-timer-fiolet { left: 70%; top: 75%; }
-
 .hide { display: none !important; }
+
+/* Wyśrodkowanie zegarów na bazie nowych kształtów */
+#zone-timer-yellow { left: 55%; top: 25%; }
+#zone-timer-purple { left: 80%; top: 20%; }
+#zone-timer-red { left: 30%; top: 60%; }
+#zone-timer-blue { left: 70%; top: 65%; }
