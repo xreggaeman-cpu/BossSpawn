@@ -5,7 +5,6 @@
 const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
 const DISCORD_WEBHOOK_URL = "TUTAJ_WKLEJ_SWOJ_LINK_Z_DISCORDA_WEBHOOKA";
 
-// Oficjalne powiązanie 8 dungeonów z Twoimi nowymi strefami i domyślnym czasem 4h (240 minut)
 const staticDungeons = [
     { id: 0, name: "Temple of Truth", zone: "yellow", filename: "temple_of_truth", defaultMin: 240 },
     { id: 1, name: "Crimson Estate", zone: "yellow", filename: "crimson_estate", defaultMin: 240 },
@@ -20,80 +19,6 @@ const staticDungeons = [
 let dungeonStates = {}; 
 let activeIndex = null;
 let triggeredAlerts = {};
-
-// ============================================
-// FUNKCJE PRZEŁĄCZANIA I PODMIANY MAP W LOCIE
-// ============================================
-
-function changeTacticalMap(type, filename, displayName) {
-    const worldMap = document.getElementById("worldMap");
-    const subMap = document.getElementById("subMap");
-    const svgOverlay = document.getElementById("svgOverlay");
-    const htmlOverlay = document.getElementById("htmlOverlay");
-    const backBtn = document.getElementById("backToWorldBtn");
-    const viewDisplay = document.getElementById("viewLocationName");
-    
-    // 1. Aktualizacja napisów na środku paska topbar
-    if (viewDisplay) {
-        viewDisplay.innerText = displayName.toUpperCase();
-        viewDisplay.style.color = "#ffd54f"; // Jaskrawy żółty kolor taktyczny
-    }
-
-    // 2. Budowanie ścieżki i ładowanie obrazu sub-mapy
-    if (type === 'region') {
-        subMap.src = `images/region-${filename}.png`;
-    } else if (type === 'dungeon') {
-        subMap.src = `images/dungeon-${filename}.png`;
-    }
-
-    // 3. Przełączanie widoczności elementów w oknie aplikacji
-    if (worldMap) worldMap.style.display = "none";
-    if (svgOverlay) svgOverlay.style.display = "none";
-    if (htmlOverlay) htmlOverlay.style.display = "none";
-    
-    if (subMap) subMap.classList.remove("hide-submap");
-    if (backBtn) {
-        backBtn.classList.remove("hide-btn");
-        backBtn.classList.add("show-back-btn");
-    }
-}
-
-function resetToWorldMap() {
-    const worldMap = document.getElementById("worldMap");
-    const subMap = document.getElementById("subMap");
-    const svgOverlay = document.getElementById("svgOverlay");
-    const htmlOverlay = document.getElementById("htmlOverlay");
-    const backBtn = document.getElementById("backToWorldBtn");
-    const viewDisplay = document.getElementById("viewLocationName");
-
-    // Przywrócenie napisu WORLD MAP na środku paska
-    if (viewDisplay) {
-        viewDisplay.innerText = "WORLD MAP";
-        viewDisplay.style.color = "#00e676"; // Powrót do zielonego standardu
-    }
-
-    // Przywrócenie widoczności głównych warstw mapy świata
-    if (worldMap) worldMap.style.display = "block";
-    if (svgOverlay) svgOverlay.style.display = "block";
-    if (htmlOverlay) htmlOverlay.style.display = "block";
-    
-    if (subMap) {
-        subMap.classList.add("hide-submap");
-        subMap.src = "";
-    }
-    if (backBtn) {
-        backBtn.classList.remove("show-back-btn");
-        backBtn.classList.add("hide-btn");
-    }
-}
-
-// Ręczne podpięcie funkcji przełączania pod przyciski HTML, aby zapobiec konfliktom
-window.changeTacticalMap = changeTacticalMap;
-window.resetToWorldMap = resetToWorldMap;
-
-// ============================================
-// SYNCHRONIZACJA Z BAZĄ DANYCH FIREBASE
-// ============================================
 
 function syncTimersData() {
     fetch(`${FIREBASE_URL}region_timers.json?t=${Date.now()}`)
@@ -123,10 +48,6 @@ function uploadDungeonState(id) {
     }).catch(err => console.error("Error saving to Firebase:", err));
 }
 
-// ============================================
-// LOGIKA SELEKCJI DUNGEONÓW Z PANELU BOCZNEGO
-// ============================================
-
 function selectDungeon(index) {
     activeIndex = index;
     
@@ -148,9 +69,6 @@ function selectDungeon(index) {
     }
 
     updateSidebarUI();
-    
-    // Automatyczne wejście w widok szczegółowy po kliknięciu dungeonu z listy
-    changeTacticalMap('dungeon', staticDungeons[index].filename, staticDungeons[index].name);
 }
 window.selectDungeon = selectDungeon;
 
@@ -169,10 +87,6 @@ function updateSidebarUI() {
         document.getElementById("curStatus").innerHTML = '<span style="color: #ff3333;">🔴 COOLDOWN ACTIVE</span>';
     }
 }
-
-// ============================================
-// STEROWANIE PANELU STEROWANIA ZABÓJSTWAMI
-// ============================================
 
 function registerKill() {
     if (activeIndex === null) return;
@@ -224,10 +138,6 @@ function manuallyChangeMinutes() {
     recalculateMapCounters();
 }
 window.manuallyChangeMinutes = manuallyChangeMinutes;
-
-// ============================================
-// PRZELICZANIE LICZNIKÓW W DÓŁ (COUNTDOWN TIMERY)
-// ============================================
 
 function recalculateMapCounters() {
     let activeZoneTimers = { yellow: null, purple: null, red: null, blue: null };
