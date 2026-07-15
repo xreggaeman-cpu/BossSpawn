@@ -19,6 +19,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 25px;
+    position: relative;
+    z-index: 10;
 }
 
 #logo {
@@ -47,27 +49,34 @@ body {
 }
 
 #sidebar {
-    width: 420px; /* Lekko poszerzony, aby pomieścić dwie kolumny przycisków */
+    width: 320px;
     background: #1e1e1e;
     border-right: 2px solid #333;
     display: flex;
     flex-direction: column;
     padding: 15px;
-    justify-content: space-between; /* Wymusza wypchnięcie panelu sterowania na sam dół */
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
 #sidebar h2 {
     color: #ffc107;
     font-size: 20px;
-    margin-bottom: 12px;
 }
 
-/* NOWOŚĆ: Układ dwukolumnowy dla dungeonów (likwiduje pionowy suwak) */
+/* Układ jednokolumnowy dla dungeonów z pionowym przewijaniem w razie potrzeby */
 .dungeon-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 10px;
-    align-content: start;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 5px;
 }
 
 .sector-group {
@@ -121,98 +130,28 @@ body {
     border-color: #ffd54f;
 }
 
-/* NOWOŚĆ: Panel sterowania przypięty ciasno na dole */
-#controlPanel {
-    background: #151515;
-    border: 1px solid #333;
-    border-radius: 6px;
-    padding: 12px;
-    margin-top: 10px;
-}
-
-#controlPanel h3 {
-    color: #ffd54f;
-    font-size: 15px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 4px;
-}
-
-/* Kompaktowe rzędy dla informacji o statusie */
-.status-info-row {
-    display: flex;
-    justify-content: space-between;
-    margin: 4px 0;
-}
-
-#controlPanel p {
-    font-size: 13px;
-}
-
-#controlPanel span {
-    font-weight: bold;
-}
-
-#killBtn {
-    width: 100%;
-    background: #d32f2f;
-    color: white;
-    font-weight: bold;
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 15px;
-    margin-top: 8px;
-    transition: 0.2s;
-}
-
-#killBtn:hover { background: #ef5350; }
-
-.btn-box {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-}
-
-#editTimeBtn, #forceResetBtn {
-    flex: 1;
-    padding: 8px;
-    font-size: 11px;
-    font-weight: bold;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-#editTimeBtn { background: #5c6bc0; }
-#editTimeBtn:hover { background: #7986cb; }
-#forceResetBtn { background: #757575; }
-#forceResetBtn:hover { background: #9e9e9e; }
-
-/* SEKJA MAPY - CAŁKOWITE ROZCIĄGNIĘCIE */
+/* Sekcja mapy ułożona pionowo: na górze mapa, na dole panel */
 #mapWrapper {
     flex: 1;
-    position: relative;
+    display: flex;
+    flex-direction: column;
     background: #050505;
     overflow: hidden;
 }
 
 #mapContent {
-    position: absolute;
+    flex: 1;
+    position: relative;
     width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
+    background: #050505;
 }
 
 #worldMap {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* DOPASOWANIE KRAWĘDZI: Mapa rozciągnie się od sidebaru do końca prawej strony ekranu */
+    object-fit: contain; /* Zmiana na 'contain' naprawia ucinanie góry mapy */
     pointer-events: none;
+    display: block;
 }
 
 /* SVG Obramowania Regionów */
@@ -288,10 +227,131 @@ body {
     100% { opacity: 1; }
 }
 
-/* Wycentrowane pozycje zegarów wewnątrz stref */
 #zone-timer-orange { left: 55%; top: 25%; }
 #zone-timer-red { left: 35%; top: 62%; }
 #zone-timer-green { left: 20%; top: 48%; }
 #zone-timer-fiolet { left: 70%; top: 75%; }
 
-.hide { display: none !important; }
+/* Nowy szeroki panel sterowania pod mapą */
+#controlPanel {
+    background: #151515;
+    border-top: 2px solid #333;
+    padding: 15px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.panel-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 6px;
+}
+
+#controlPanel h3 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.boss-meta-info {
+    font-size: 13px;
+    color: #aaa;
+}
+
+/* Statystyki wyświetlane obok siebie w rzędzie */
+.status-info-container {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    background: #1a1a1a;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.status-info-row p {
+    font-size: 13px;
+}
+
+.status-info-row span {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Przyciski akcji rozciągnięte w jednym rzędzie */
+.control-actions-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: center;
+}
+
+.action-btn-small {
+    background: #ffc107;
+    color: black;
+    border: none;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.action-btn-small:hover { background: #ffe082; }
+.red-btn { background: #d32f2f; }
+.red-btn:hover { background: #ef5350; }
+.blue-btn { background: #1976d2; }
+.blue-btn:hover { background: #42a5f5; }
+.purple-btn { background: #7b1fa2; }
+.purple-btn:hover { background: #ab47bc; }
+.gray-btn { background: #555; }
+.gray-btn:hover { background: #777; }
+
+/* Log historii zabójstw */
+#historyPanel {
+    background: #0f0f0f;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #222;
+}
+
+#historyPanel h4 {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+}
+
+#historyList {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    font-size: 11px;
+    padding-bottom: 2px;
+}
+
+#historyList li {
+    background: #222;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    border: 1px solid #333;
+}
+
+.hide {
+    display: none !important;
+}
