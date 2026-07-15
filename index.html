@@ -15,7 +15,7 @@
             <span>Global Region & Dungeon Tracker</span>
         </div>
         
-        <!-- NOWOŚĆ: Środkowy dynamiczny napis widoku -->
+        <!-- Środkowy dynamiczny napis widoku -->
         <div id="currentViewDisplay">CURRENT VIEW: <span id="viewLocationName">WORLD MAP</span></div>
         
         <div id="clock">00:00:00</div>
@@ -32,24 +32,24 @@
                 <!-- GRUPA TALANDRE - ŻÓŁTA (1, 2, 3) -->
                 <div class="sector-group sec-orange">
                     <div class="sector-title">TALANDRE</div>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'temple_of_truth', 'Temple of Truth')">Temple of Truth</button>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'crimson_estate', 'Crimson Estate')" style="margin-top: 5px;">Crimson Estate</button>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'bercant_estate', 'Bercant Estate')" style="margin-top: 5px;">Bercant Estate</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'temple_of_truth', 'Temple of Truth', 0)">Temple of Truth</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'crimson_estate', 'Crimson Estate', 1)" style="margin-top: 5px;">Crimson Estate</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'bercant_estate', 'Bercant Estate', 2)" style="margin-top: 5px;">Bercant Estate</button>
                 </div>
                 
                 <!-- GRUPA LASLAN - CZERWONA (4, 5) -->
                 <div class="sector-group sec-red">
                     <div class="sector-title">LASLAN</div>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'syleus_abyss', 'Syleus\'s Abyss')">Syleus's Abyss</button>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'shadowed_crypt', 'Shadowed Crypt')" style="margin-top: 5px;">Shadowed Crypt</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'syleus_abyss', 'Syleus\'s Abyss', 3)">Syleus's Abyss</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'shadowed_crypt', 'Shadowed Crypt', 4)" style="margin-top: 5px;">Shadowed Crypt</button>
                 </div>
 
                 <!-- GRUPA STONEGARD - NIEBIESKA (6, 7, 8) -->
                 <div class="sector-group sec-blue">
                     <div class="sector-title">STONEGARD</div>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'temple_of_sylaveth', 'Temple of Sylaveth')">Temple of Sylaveth</button>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'ant_nest', 'Ant Nest')" style="margin-top: 5px;">Ant Nest</button>
-                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'sanctum_of_desire', 'Sanctum of Desire')" style="margin-top: 5px;">Sanctum of Desire</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'temple_of_sylaveth', 'Temple of Sylaveth', 5)">Temple of Sylaveth</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'ant_nest', 'Ant Nest', 6)" style="margin-top: 5px;">Ant Nest</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'sanctum_of_desire', 'Sanctum of Desire', 7)" style="margin-top: 5px;">Sanctum of Desire</button>
                 </div>
             </div>
 
@@ -65,11 +65,11 @@
                     <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
                 </div>
 
-                <button id="killBtn">REGISTER KILL</button>
+                <button id="killBtn" onclick="registerKill()">REGISTER KILL</button>
 
                 <div class="btn-box">
-                    <button id="editTimeBtn">CHANGE COOLDOWN</button>
-                    <button id="forceResetBtn">RESET TO READY</button>
+                    <button id="editTimeBtn" onclick="manuallyChangeMinutes()">CHANGE COOLDOWN</button>
+                    <button id="forceResetBtn" onclick="resetToReady()">RESET TO READY</button>
                 </div>
             </div>
         </div>
@@ -118,9 +118,9 @@
 
     </div>
 
-    <!-- SZYBKI I NIEZAWODNY KOD AKTUALIZACJI PASKA I PODMIANY DUNGEONÓW -->
+    <!-- NIEZALEŻNY SKRYPT PRZEŁĄCZANIA WIDOKÓW MAPY -->
     <script>
-        function changeTacticalMap(type, filename, displayName) {
+        function changeTacticalMap(type, filename, displayName, dungeonIndex) {
             const worldMap = document.getElementById("worldMap");
             const subMap = document.getElementById("subMap");
             const svgOverlay = document.getElementById("svgOverlay");
@@ -128,47 +128,54 @@
             const backBtn = document.getElementById("backToWorldBtn");
             const viewDisplay = document.getElementById("viewLocationName");
             
-            // 1. Aktualizacja napisów w ramce sterowania oraz na środku topbaru
-            document.getElementById("curName").innerText = displayName;
-            viewDisplay.innerText = displayName.toUpperCase();
-            viewDisplay.style.color = "#ffd54f"; // Zmiana koloru tekstu na jaskrawy żółty dla celów taktycznych
+            // Wywołanie zaznaczenia bocznego panelu w kodzie JS (jeśli to był klik w dungeon)
+            if (typeof dungeonIndex !== 'undefined' && typeof window.selectDungeon === 'function') {
+                window.selectDungeon(dungeonIndex);
+            }
 
-            // 2. Ładowanie obrazu po pełnych nazwach z parametrów HTML
+            // Aktualizacja napisów w nagłówku topbaru
+            if (viewDisplay) {
+                viewDisplay.innerText = displayName.toUpperCase();
+                viewDisplay.style.color = "#ffd54f";
+            }
+
+            // Podmiana pliku graficznego z sub-mapą
             if (type === 'region') {
                 subMap.src = `images/region-${filename}.png`;
             } else if (type === 'dungeon') {
                 subMap.src = `images/dungeon-${filename}.png`;
             }
 
-            // 3. Przełączenie widoczności warstw w oknie przeglądarki
+            // Przełączenie widoczności warstw na ekranie
             worldMap.style.display = "none";
             svgOverlay.style.display = "none";
             htmlOverlay.style.display = "none";
             
             subMap.classList.remove("hide-submap");
-            backBtn.classList.remove("hide-btn");
-            backBtn.classList.add("show-back-btn");
-        }
+backBtn.classList.remove("hide-btn");
+backBtn.classList.add("show-back-btn");
+}
 
-        function resetToWorldMap() {
-            const worldMap = document.getElementById("worldMap");
-            const subMap = document.getElementById("subMap");
-const svgOverlay = document.getElementById("svgOverlay");
-const htmlOverlay = document.getElementById("htmlOverlay");
-const backBtn = document.getElementById("backToWorldBtn");
-const viewDisplay = document.getElementById("viewLocationName");
+function resetToWorldMap() {
+    const worldMap = document.getElementById("worldMap");
+    const subMap = document.getElementById("subMap");
+    const svgOverlay = document.getElementById("svgOverlay");
+    const htmlOverlay = document.getElementById("htmlOverlay");
+    const backBtn = document.getElementById("backToWorldBtn");
+    const viewDisplay = document.getElementById("viewLocationName");
 
-// Przywrócenie pierwotnego napisu na środku paska
-viewDisplay.innerText = "WORLD MAP";
-viewDisplay.style.color = "#00e676"; // Powrót do zielonego standardu
+    if (viewDisplay) {
+        viewDisplay.innerText = "WORLD MAP";
+        viewDisplay.style.color = "#00e676";
+    }
 
-// Resetowanie map i warstw
-worldMap.style.display = "block";
-svgOverlay.style.display = "block";
-htmlOverlay.style.display = "block";
+    worldMap.style.display = "block";
+    svgOverlay.style.display = "block";
+    htmlOverlay.style.display = "block";
 
-subMap.classList.add("hide-submap");
-subMap.src = "";
+    subMap.classList.add("hide-submap");
+    subMap.src = "";
 
-backBtn.classList.remove("show-back-btn");
-backBtn.classList.add("hide-btn");
+    backBtn.classList.remove("show-back-btn");
+    backBtn.classList.add("hide-btn");
+}
