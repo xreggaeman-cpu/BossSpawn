@@ -1,74 +1,118 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TL Elite Boss Tracker</title>
+    <title>TL Global Region Tracker</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Górny pasek z logiem gry oraz zegarem -->
+    <!-- Topbar Element -->
     <div id="topbar">
         <div id="logo">
             THRONE & LIBERTY
-            <span>Elite Boss Tracker</span>
+            <span>Global Region & Dungeon Tracker</span>
         </div>
-        <div id="clock"></div>
+        <div id="clock">00:00:00</div>
     </div>
 
-    <!-- Główny kontener aplikacji -->
+    <!-- Main Application Container -->
     <div id="container">
 
-        <!-- Panel boczny z informacjami o bossach -->
+        <!-- Sidebar Panel -->
         <div id="sidebar">
-            <h2>Boss Information</h2>
+            <h2>Dungeons List</h2>
             
-            <div id="bossInfo">
-                <h3>Select Boss</h3>
+            <!-- List of Dungeons divided by sectors -->
+            <div class="dungeon-list">
+                <div class="sector-group sec-orange">
+                    <div class="sector-title">TEMPLE OF TRUTH</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(0)">Temple of Truth</button>
+                </div>
                 
-                <p>Name: <span id="bossName">---</span></p>
-                <p>Dungeon: <span id="bossDungeon">---</span></p>
-                <p>Type: <span id="bossType">---</span></p>
-                
-                <!-- NOWE: Dynamiczne pola informacyjne o konfiguracji alarmu -->
-                <p>Respawn Time: <span id="bossRespawnTime">---</span></p>
-                <p>Voice Alert: <span id="bossVoiceAlertStatus">---</span></p>
-                
-                <p>Last Kill: <span id="lastKill">---</span></p>
-                <p>Status: <span id="bossStatus">READY</span></p>
-                <p>Elapsed: <span id="elapsed">00:00:00</span></p>
-
-                <!-- Przycisk rejestracji natychmiastowego zabójstwa -->
-                <button id="killButton">KILLED</button>
-
-                <!-- Ostylowana grupa dodatkowych przycisków zarządzania chmurą -->
-                <div class="button-group">
-                    <button id="manualKill">ADD KILL TIME</button>
-                    <!-- NOWE: Przycisk otwierający okno konfiguracji minutowej i głosu -->
-                    <button id="configureVoiceButton" style="background: #6366f1;">CONFIGURE ALERT</button>
-                    <button id="resetBossState">RESET TO BLUE</button>
-                    <button id="addBoss">ADD BOSS</button>
+                <div class="sector-group sec-red">
+                    <div class="sector-title">CRIMSON ESTATE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(1)">Crimson Estate</button>
                 </div>
 
-                <h3>History</h3>
-                <ul id="historyList">
-                    <li>No history</li>
-                </ul>
+                <div class="sector-group sec-orange">
+                    <div class="sector-title">BERCANT ESTATE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(2)">Bercant Estate</button>
+                </div>
+
+                <div class="sector-group sec-green">
+                    <div class="sector-title">SYLEUS'S ABYSS</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(3)">Syleus's Abyss</button>
+                </div>
+
+                <div class="sector-group sec-fiolet">
+                    <div class="sector-title">SHADOWED CRYPT</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(4)">Shadowed Crypt</button>
+                </div>
+
+                <div class="sector-group sec-fiolet">
+                    <div class="sector-title">TEMPLE OF SYLAVETH</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(5)">Temple of Sylaveth</button>
+                </div>
+
+                <div class="sector-group sec-red">
+                    <div class="sector-title">ANT NEST</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(6)">Ant Nest</button>
+                </div>
+
+                <div class="sector-group sec-orange">
+                    <div class="sector-title">SANCTRUM OF DESIRE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(7)">Sanctum of Desire</button>
+                </div>
+            </div>
+
+            <!-- Control Panel for Selected Dungeon -->
+            <div id="controlPanel">
+                <h3>Selected Dungeon</h3>
+                <p>Name: <span id="curName">---</span></p>
+                <p>Status: <span id="curStatus">READY</span></p>
+                <p>Timer: <span id="curTimer">--:--:--</span></p>
+                <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
+
+                <button id="killBtn" onclick="registerKill()">REGISTER KILL</button>
+
+                <div class="btn-box">
+                    <button id="editTimeBtn" onclick="manuallyChangeMinutes()">CHANGE COOLDOWN</button>
+                    <button id="forceResetBtn" onclick="resetToReady()">RESET TO READY</button>
+                </div>
             </div>
         </div>
 
-        <!-- Główny obszar mapy taktycznej -->
+        <!-- Tactical Map Display Area -->
         <div id="mapWrapper">
             <div id="mapContent">
                 <img id="worldMap" src="images/worldmap.png" draggable="false">
-                <div id="bossLayer"></div>
+                
+                <!-- Neon Vector SVG Border Layer -->
+                <svg id="svgOverlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                    <!-- Sektor Pomarańczowy -->
+                    <path id="poly-orange" class="region-border border-orange" d="M 150,50 L 850,50 L 950,450 L 680,630 L 450,400 Z" />
+                    <!-- Sektor Czerwony -->
+                    <path id="poly-red" class="region-border border-red" d="M 50,50 L 450,400 L 680,630 L 480,950 L 50,950 Z" />
+                    <!-- Sektor Zielony -->
+                    <path id="poly-green" class="region-border border-green" d="M 50,300 L 350,300 L 550,550 L 350,800 L 50,700 Z" />
+                    <!-- Sektor Fioletowy -->
+                    <path id="poly-fiolet" class="region-border border-fiolet" d="M 680,630 L 950,450 L 950,950 L 480,950 Z" />
+                </svg>
+
+                <!-- Floating Countdown Timers Container -->
+                <div id="htmlOverlay">
+                    <div id="zone-timer-orange" class="map-countdown-clock hide">00:00:00</div>
+                    <div id="zone-timer-red" class="map-countdown-clock hide">00:00:00</div>
+                    <div id="zone-timer-green" class="map-countdown-clock hide">00:00:00</div>
+                    <div id="zone-timer-fiolet" class="map-countdown-clock hide">00:00:00</div>
+                </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Skrypt sterujący logiką aplikacji połączony online z Firebase -->
     <script src="script.js"></script>
 </body>
 </html>
