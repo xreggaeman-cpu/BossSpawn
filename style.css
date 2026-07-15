@@ -81,6 +81,7 @@ body {
 .sector-group.sec-red { border-left-color: #f44336; }
 .sector-group.sec-green { border-left-color: #4caf50; }
 .sector-group.sec-fiolet { border-left-color: #9c27b0; }
+.sector-group.sec-blue { border-left-color: #2196f3; }
 
 .sector-title {
     font-size: 9px;
