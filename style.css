@@ -14,10 +14,10 @@ body {
 #container {
     display: flex;
     width: 100vw;
-    height: 100vh; /* Zajmuje teraz pełne 100% wysokości monitora */
+    height: 100vh;
 }
 
-/* LEWY PANEL: Zwężony o 40% (z 360px na 216px) z mniejszymi tekstami */
+/* LEWY PANEL: Zwężony o 40% (216px) */
 #sidebar {
     width: 216px; 
     background: #1e1e1e;
@@ -28,7 +28,6 @@ body {
     justify-content: space-between;
 }
 
-/* NOWOŚĆ: Blok nagłówka sidebaru z czasem i statusem widoku */
 #sidebar-header {
     background: #151515;
     border: 1px solid #333;
@@ -101,13 +100,13 @@ body {
     border: 1px solid #444;
     padding: 4px 6px;
     text-align: left;
-    font-size: 11px; /* Czcionka dostosowana do węższego boku */
+    font-size: 11px;
     font-weight: bold;
     border-radius: 3px;
     cursor: pointer;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Skraca długie nazwy z wielokropkiem jeśli nie mieszczą się w 216px */
+    text-overflow: ellipsis;
     transition: 0.15s;
 }
 
@@ -122,7 +121,6 @@ body {
     border-color: #ffd54f;
 }
 
-/* Panel sterowania kompaktowo dopasowany na dół sidebaru */
 #controlPanel {
     background: #151515;
     border: 1px solid #333;
@@ -192,7 +190,7 @@ body {
 #forceResetBtn { background: #757575; }
 #forceResetBtn:hover { background: #9e9e9e; }
 
-/* SEKCJA MAPY: MAKSYMALNY ROZMIAR W PIONIE I POZIOMIE */
+/* SEKJA MAPY - CAŁKOWITE UWOLNIENIE ROZMIARU */
 #mapWrapper {
     flex: 1;
     background: #111;
@@ -201,6 +199,7 @@ body {
     align-items: center;
     overflow: hidden;
     position: relative;
+    padding: 15px; /* Delikatny margines estetyczny od krawędzi ekranu */
 }
 
 #backToWorldBtn {
@@ -229,40 +228,39 @@ body {
 .hide-btn { display: none !important; }
 .show-back-btn { display: block !important; }
 
-/* Kontener wektorowy ściśle przylegający do krawędzi powiększonego obrazu */
+/* POPRAWKA: Usunąłem aspect-ratio. Kontener dopasowuje się teraz dynamicznie do MAKSYMALNYCH wymiarów wolnego ekranu */
 .map-responsive-container {
     position: relative;
-    display: inline-block;
-    max-width: 100%;
-    max-height: 100%;
-    aspect-ratio: 1150 / 1262; 
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 #worldMap {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* MAPA JEST TERAZ POTĘŻNA, BO WYKORZYSTUJE CAŁE 100% WYSOKOŚCI EKRANU */
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Gwarantuje brak ucinania i zniekształceń */
     pointer-events: none;
     user-select: none;
 }
 
 #subMap {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Każda sub-mapa niezależnie od swoich proporcji urośnie teraz na maksa */
     pointer-events: none;
     user-select: none;
 }
 
 .hide-submap { display: none !important; }
 
-/* SVG Obramowania Regionów */
+/* SVG Obramowania Regionów - dopasowane do elastycznego kontenera */
 #svgOverlay {
     position: absolute;
-    left: 0;
-    top: 0;
     width: 100%;
     height: 100%;
     z-index: 5;
