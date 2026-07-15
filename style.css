@@ -12,7 +12,7 @@ body {
 }
 
 #topbar {
-    height: 70px;
+    height: 60px; /* Zmniejszona wysokość paska z 70px, żeby zyskać miejsce na dole */
     background: #1a1a1a;
     border-bottom: 2px solid #333;
     display: flex;
@@ -22,20 +22,20 @@ body {
 }
 
 #logo {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: bold;
     color: #ffd54f;
 }
 
 #logo span {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     color: #bbb;
     font-weight: 400;
 }
 
 #clock {
-    font-size: 22px;
+    font-size: 20px;
     color: #00e676;
     font-weight: bold;
 }
@@ -43,41 +43,39 @@ body {
 #container {
     display: flex;
     width: 100vw;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 60px);
 }
 
 #sidebar {
-    width: 440px; /* Szerokość dobrana pod dwie kolumny */
+    width: 360px; /* Powrót do standardowej szerokości */
     background: #1e1e1e;
     border-right: 2px solid #333;
     display: flex;
     flex-direction: column;
-    padding: 15px;
+    padding: 12px; /* Lekko ściśnięty padding */
     justify-content: space-between; /* Wypycha panel sterowania na dół */
 }
 
 #sidebar h2 {
     color: #ffc107;
-    font-size: 20px;
-    margin-bottom: 12px;
+    font-size: 18px;
+    margin-bottom: 8px;
 }
 
-/* Układ dwukolumnowy dla przycisków dungeonów */
+/* POWRÓT DO JEDNEJ KOLUMNY: Dungeony jeden pod drugim, zredukowane wymiary */
 .dungeon-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    align-content: start;
+    display: flex;
+    flex-direction: column;
+    gap: 5px; /* Minimalny odstęp */
+    flex: 1;
+    overflow: hidden; /* Zakaz suwaka dla całej listy */
 }
 
 .sector-group {
     background: #252525;
-    border-radius: 6px;
-    padding: 8px;
+    border-radius: 4px;
+    padding: 4px 8px; /* Bardzo zwarty padding */
     border-left: 4px solid #444;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 
 .sector-group.sec-orange { border-left-color: #ff9800; }
@@ -86,14 +84,11 @@ body {
 .sector-group.sec-fiolet { border-left-color: #9c27b0; }
 
 .sector-title {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: bold;
-    color: #aaa;
-    margin-bottom: 4px;
+    color: #888;
+    margin-bottom: 2px;
     letter-spacing: 0.5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .dungeon-btn {
@@ -101,11 +96,11 @@ body {
     background: #333;
     color: #fff;
     border: 1px solid #444;
-    padding: 8px;
+    padding: 5px 8px; /* Ściśnięty przycisk */
     text-align: left;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: bold;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
     transition: 0.2s;
 }
@@ -121,30 +116,31 @@ body {
     border-color: #ffd54f;
 }
 
+/* Panel sterowania ciasno na dole */
 #controlPanel {
     background: #151515;
     border: 1px solid #333;
     border-radius: 6px;
-    padding: 12px;
+    padding: 10px;
     margin-top: 10px;
 }
 
 #controlPanel h3 {
     color: #ffd54f;
-    font-size: 15px;
-    margin-bottom: 8px;
+    font-size: 14px;
+    margin-bottom: 6px;
     border-bottom: 1px solid #333;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
 }
 
 .status-info-row {
     display: flex;
     justify-content: space-between;
-    margin: 4px 0;
+    margin: 3px 0;
 }
 
 #controlPanel p {
-    font-size: 13px;
+    font-size: 12px;
 }
 
 #controlPanel span {
@@ -160,8 +156,8 @@ body {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 15px;
-    margin-top: 8px;
+    font-size: 14px;
+    margin-top: 6px;
     transition: 0.2s;
 }
 
@@ -169,13 +165,13 @@ body {
 
 .btn-box {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 6px;
+    margin-top: 6px;
 }
 
 #editTimeBtn, #forceResetBtn {
     flex: 1;
-    padding: 8px;
+    padding: 6px;
     font-size: 11px;
     font-weight: bold;
     color: white;
@@ -190,11 +186,11 @@ body {
 #forceResetBtn { background: #757575; }
 #forceResetBtn:hover { background: #9e9e9e; }
 
-/* ROZCIĄGNIĘCIE MAPY I USUNIĘCIE CZARNYCH PASÓW */
+/* REWELACYJNE DIZURNE PRZESUNIĘCIE MAPY: PROPORCJONALNE I BEZ CZARNYCH PASÓW */
 #mapWrapper {
     flex: 1;
     position: relative;
-    background: #050505;
+    background: #111;
     overflow: hidden;
 }
 
@@ -209,7 +205,8 @@ body {
 #worldMap {
     width: 100%;
     height: 100%;
-    object-fit: fill; /* Wymusza dopasowanie całej mapy bez ucinania góry, dołu i boków */
+    object-fit: contain; /* MAPA ODZYSKUJE SŁODKIE PROPORCJE I NIE JEST ROZCIĄGNIĘTA */
+    background: #111;
     pointer-events: none;
 }
 
@@ -286,6 +283,7 @@ body {
     100% { opacity: 1; }
 }
 
+/* Pozycje zegarów nad regionami */
 #zone-timer-orange { left: 55%; top: 25%; }
 #zone-timer-red { left: 35%; top: 62%; }
 #zone-timer-green { left: 20%; top: 48%; }
