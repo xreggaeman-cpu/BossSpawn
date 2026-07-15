@@ -1,9 +1,6 @@
-// ============================================
-// TL GLOBAL REGION TRACKER - LIVE CORE SCRIPT
-// ============================================
-
-const FIREBASE_URL = "https://boss-spawn-throneandliberty-default-rtdb.europe-west1.firebasedatabase.app/";
-const DISCORD_WEBHOOK_URL = "TUTAJ_WKLEJ_SWOJ_LINK_Z_DISCORDA_WEBHOOKA";
+// ========================================================
+// MINI-SKRYPT OBSŁUGI MAP REGIONALNYCH I DUNGEONÓW
+// ========================================================
 
 const staticDungeons = [
     { id: 0, name: "Temple of Truth", zone: "yellow", filename: "temple_of_truth", defaultMin: 240 },
@@ -16,224 +13,86 @@ const staticDungeons = [
     { id: 7, name: "Sanctum of Desire", zone: "blue", filename: "sanctum_of_desire", defaultMin: 240 }
 ];
 
-let dungeonStates = {}; 
 let activeIndex = null;
-let triggeredAlerts = {};
 
-function syncTimersData() {
-    fetch(`${FIREBASE_URL}region_timers.json?t=${Date.now()}`)
-        .then(res => res.json())
-        .then(data => {
-            dungeonStates = data || {};
-            
-            staticDungeons.forEach(d => {
-                if (!dungeonStates[`dungeon_${d.id}`]) {
-                    dungeonStates[`dungeon_${d.id}`] = {
-                        killTimestamp: 0,
-                        customMinutes: d.defaultMin
-                    };
-                }
-            });
-            
-            updateSidebarUI();
-            recalculateMapCounters();
-        })
-        .catch(err => console.error("Error connecting with Firebase:", err));
-}
-
-function uploadDungeonState(id) {
-    fetch(`${FIREBASE_URL}region_timers/dungeon_${id}.json`, {
-        method: "PUT",
-        body: JSON.stringify(dungeonStates[`dungeon_${id}`])
-    }).catch(err => console.error("Error saving to Firebase:", err));
-}
-
-function selectDungeon(index) {
-    activeIndex = index;
+// Funkcja otwierająca mapę regionu lub dungeonu
+function showRegion(type, filename, displayName, dungeonIndex) {
+    const worldMap = document.getElementById("worldMap");
+    const subMap = document.getElementById("subMap");
+    const svgOverlay = document.getElementById("svgOverlay");
+    const backBtn = document.getElementById("backToWorldBtn");
+    const viewDisplay = document.getElementById("viewLocationName");
     
-    document.querySelectorAll(".dungeon-btn").forEach((btn, idx) => {
-        if (idx === index) btn.classList.add("active");
-        else btn.classList.remove("active");
-    });
-
-    document.querySelectorAll(".map-zone").forEach(p => {
-        if (p.className && p.className.baseVal) {
-            p.className.baseVal = p.className.baseVal.replace(/\bglow-\w+\b/g, "").trim();
+    // 1. Jeśli kliknięto dungeon, zapisujemy jego indeks i wstrzykujemy dane do panelu
+    if (typeof dungeonIndex !== 'undefined') {
+        activeIndex = dungeonIndex;
+        
+        document.querySelectorAll(".dungeon-btn").forEach((btn, idx) => {
+            if (idx === dungeonIndex) btn.classList.add("active");
+            else btn.classList.remove("active");
+        });
+        
+        if (document.getElementById("curName")) {
+            document.getElementById("curName").innerText = displayName;
         }
-    });
-
-    const targetZone = staticDungeons[index].zone;
-    const pathEl = document.getElementById(`region-${targetZone}`);
-    if (pathEl && pathEl.className && pathEl.className.baseVal) {
-        pathEl.className.baseVal += ` glow-${targetZone}`;
     }
 
-    updateSidebarUI();
-}
-window.selectDungeon = selectDungeon;
-
-function updateSidebarUI() {
-    if (activeIndex === null) return;
-    const d = staticDungeons[activeIndex];
-    const state = dungeonStates[`dungeon_${d.id}`] || { killTimestamp: 0, customMinutes: d.defaultMin };
-
-    document.getElementById("curName").innerText = d.name;
-    document.getElementById("curConfigTime").innerText = `${Math.floor(state.customMinutes / 60)}h (${state.customMinutes}m)`;
-
-    if (state.killTimestamp === 0) {
-        document.getElementById("curStatus").innerHTML = '<span style="color: #00e676;">🔵 READY</span>';
-        document.getElementById("curTimer").innerText = "READY";
-    } else {
-        document.getElementById("curStatus").innerHTML = '<span style="color: #ff3333;">🔴 COOLDOWN ACTIVE</span>';
+    // 2. Aktualizacja paska górnego
+    if (viewDisplay) {
+        viewDisplay.innerText = displayName.toUpperCase();
+        viewDisplay.style.color = "#ffd54f"; // Żółty kolor taktyczny
     }
-}
 
-function registerKill() {
-    if (activeIndex === null) return;
-    const id = staticDungeons[activeIndex].id;
+    // 3. Wczytanie odpowiedniej sub-mapy z folderu images/
+    if (type === 'region') {
+        subMap.src = `images/region-${filename}.png`;
+    } else if (type === 'dungeon') {
+        subMap.src = `images/dungeon-${filename}.png`;
+    }
+
+    // 4. Przełączanie widoczności
+    if (worldMap) worldMap.style.display = "none";
+    if (svgOverlay) svgOverlay.style.display = "none";
     
-    dungeonStates[`dungeon_${id}`].killTimestamp = Date.now();
-    if (triggeredAlerts[id]) delete triggeredAlerts[id];
-
-    uploadDungeonState(id);
-    updateSidebarUI();
-    recalculateMapCounters();
-}
-window.registerKill = registerKill;
-
-function resetToReady() {
-    if (activeIndex === null) return;
-    const id = staticDungeons[activeIndex].id;
-
-    if (!confirm(`Reset ${staticDungeons[activeIndex].name} to READY?`)) return;
-
-    dungeonStates[`dungeon_${id}`].killTimestamp = 0;
-    if (triggeredAlerts[id]) delete triggeredAlerts[id];
-
-    uploadDungeonState(id);
-    updateSidebarUI();
-    recalculateMapCounters();
-}
-window.resetToReady = resetToReady;
-
-function manuallyChangeMinutes() {
-    if (activeIndex === null) return;
-    const id = staticDungeons[activeIndex].id;
-    const currentState = dungeonStates[`dungeon_${id}`];
-
-    let input = prompt(`Modify respawn timer for ${staticDungeons[activeIndex].name} (in MINUTES):`, currentState.customMinutes);
-    if (input === null) return;
-
-    let parsedVal = Number(input);
-    if (isNaN(parsedVal) || parsedVal <= 0) {
-        alert("Please enter a valid amount of minutes!");
-        return;
-    }
-
-    currentState.customMinutes = parsedVal;
-    if (triggeredAlerts[id]) delete triggeredAlerts[id];
-
-    uploadDungeonState(id);
-    updateSidebarUI();
-    recalculateMapCounters();
-}
-window.manuallyChangeMinutes = manuallyChangeMinutes;
-
-function recalculateMapCounters() {
-    let activeZoneTimers = { yellow: null, purple: null, red: null, blue: null };
-
-    staticDungeons.forEach(d => {
-        const state = dungeonStates[`dungeon_${d.id}`];
-        if (!state || state.killTimestamp === 0) return;
-
-        let totalDurationSec = state.customMinutes * 60;
-        let elapsedSec = Math.floor((Date.now() - state.killTimestamp) / 1000);
-        let remainingSec = totalDurationSec - elapsedSec;
-
-        if (remainingSec > 0) {
-            if (activeZoneTimers[d.zone] === null || remainingSec < activeZoneTimers[d.zone].sec) {
-                activeZoneTimers[d.zone] = { sec: remainingSec, dungeonObj: d, stamp: state.killTimestamp };
-            }
-        }
-    });
-
-    ["yellow", "purple", "red", "blue"].forEach(zone => {
-        const timerEl = document.getElementById(`zone-timer-${zone}`);
-        if (!timerEl) return;
-
-        const data = activeZoneTimers[zone];
-        if (data === null) {
-            timerEl.classList.add("hide");
-            timerEl.classList.remove("alert-active");
-            timerEl.innerText = "00:00:00";
-        } else {
-            timerEl.classList.remove("hide");
-            timerEl.innerText = secondsToString(data.sec);
-
-            if (data.sec <= 600) { 
-                timerEl.classList.add("alert-active");
-
-                if (triggeredAlerts[data.dungeonObj.id] !== data.stamp) {
-                    playVoiceAlert(data.dungeonObj.name);
-                    sendDiscordNotification(data.dungeonObj.name);
-                    triggeredAlerts[data.dungeonObj.id] = data.stamp;
-                }
-            } else {
-                timerEl.classList.remove("alert-active");
-            }
-        }
-    });
-
-    if (activeIndex !== null) {
-        const activeD = staticDungeons[activeIndex];
-        const activeState = dungeonStates[`dungeon_${activeD.id}`];
-        if (activeState && activeState.killTimestamp !== 0) {
-            let total = activeState.customMinutes * 60;
-            let elap = Math.floor((Date.now() - activeState.killTimestamp) / 1000);
-            let rem = total - elap;
-            if (rem > 0) document.getElementById("curTimer").innerText = secondsToString(rem);
-            else document.getElementById("curTimer").innerText = "READY";
-        }
+    if (subMap) subMap.classList.remove("hide-submap");
+    if (backBtn) {
+        backBtn.classList.remove("hide-btn");
+        backBtn.classList.add("show-back-btn");
     }
 }
 
-function playVoiceAlert(dungeonName) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const text = `Attention. Elite boss will respawn in ten minutes at ${dungeonName}.`;
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        utterance.pitch = 0.9;
-        window.speechSynthesis.speak(utterance);
+// Funkcja powrotu na mapę świata
+function showWorldMap() {
+    const worldMap = document.getElementById("worldMap");
+    const subMap = document.getElementById("subMap");
+    const svgOverlay = document.getElementById("svgOverlay");
+    const backBtn = document.getElementById("backToWorldBtn");
+    const viewDisplay = document.getElementById("viewLocationName");
+
+    if (viewDisplay) {
+        viewDisplay.innerText = "WORLD MAP";
+        viewDisplay.style.color = "#00e676"; // Powrót do zielonego standardu
+    }
+
+    if (worldMap) worldMap.style.display = "block";
+    if (svgOverlay) svgOverlay.style.display = "block";
+    
+    if (subMap) {
+        subMap.classList.add("hide-submap");
+        subMap.src = "";
+    }
+    if (backBtn) {
+        backBtn.classList.remove("show-back-btn");
+        backBtn.classList.add("hide-btn");
     }
 }
 
-function sendDiscordNotification(dungeonName) {
-    if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL.includes("TUTAJ_WKLEJ")) return;
+// Globalna dostępność funkcji dla elementów HTML
+window.showRegion = showRegion;
+window.showWorldMap = showWorldMap;
 
-    const msg = `🔔 **[@here] Elite Boss Alert!**\nBoss will respawn in **10 minutes** at dungeon: **${dungeonName}**!`;
-    fetch(DISCORD_WEBHOOK_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: msg, username: "TL Global Tracker" })
-    }).catch(err => console.error("Discord integration post failed:", err));
-}
-
-function secondsToString(sec) {
-    let h = Math.floor(sec / 3600);
-    let m = Math.floor((sec % 3600) / 60);
-    let s = Math.floor(sec % 60);
-    return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
-}
-
-function updateClock() {
-    const el = document.getElementById("clock");
-    if (el) el.innerText = new Date().toLocaleTimeString();
-}
-
-updateClock();
-syncTimersData();
-setInterval(updateClock, 1000);
-setInterval(recalculateMapCounters, 1000);
-setInterval(syncTimersData, 5000);
+// Czysty, niezawodny zegarek
+setInterval(() => {
+    const clockEl = document.getElementById("clock");
+    if (clockEl) clockEl.innerText = new Date().toLocaleTimeString();
+}, 1000);
