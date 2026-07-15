@@ -184,7 +184,7 @@ body {
 #forceResetBtn { background: #757575; }
 #forceResetBtn:hover { background: #9e9e9e; }
 
-/* SEKCJA MAPY - IDEALNE TRZYMANIE PROPORCJI I DOPASOWANIA */
+/* SEKCJA MAPY PROPORCJONALNEJ I CZYTELNEJ */
 #mapWrapper {
     flex: 1;
     background: #111;
@@ -195,10 +195,9 @@ body {
     position: relative;
 }
 
-/* NAPRAWIONY KONTENER: Pobiera wymiary w 100% z fizycznego rozmiaru obrazka i unika rozjeżdżania */
 .map-responsive-container {
     position: relative;
-    display: inline-block; /* Zmusza boks do idealnego zaciśnięcia się na obrazku mapy */
+    display: inline-block; /* Zamyka boks wektorów ściśle wokół obrazka mapy */
     max-width: 100%;
     max-height: 100%;
 }
@@ -206,13 +205,13 @@ body {
 #worldMap {
     display: block;
     max-width: 100%;
-    max-height: calc(100vh - 60px); /* Blokuje uciekanie mapy pod dolną krawędź ekranu */
-    object-fit: contain;
+    max-height: calc(100vh - 60px);
+    object-fit: contain; /* MAPA JEST PIĘKNA, OSTRA I TRZYMA PRZYZWOITY KSZTAŁT */
     pointer-events: none;
     user-select: none;
 }
 
-/* SVG Obramowania Regionów - teraz zablokowane sztywno w krawędziach obrazka */
+/* Elastyczna nakładka SVG operująca na procentach */
 #svgOverlay {
     position: absolute;
     left: 0;
@@ -226,13 +225,13 @@ body {
 .map-zone {
     fill: rgba(255, 255, 255, 0); 
     stroke: transparent;
-    stroke-width: 5;
+    stroke-width: 0.5; /* Szerokość dostosowana pod siatkę procentową */
     cursor: pointer;
     transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out;
     pointer-events: auto; 
 }
 
-/* Rozświetlanie Twoich dokładnych kształtów wektorowych online */
+/* Świecenie precyzyjnych stref z dokładnością do 1 piksela */
 .zone-yellow:hover {
     fill: rgba(255, 235, 59, 0.12); 
     stroke: #ffeb3b; 
