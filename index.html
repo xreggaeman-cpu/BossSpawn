@@ -8,7 +8,7 @@
 </head>
 <body>
 
-    <!-- Topbar Element -->
+    <!-- Górny pasek z logiem oraz zegarem głównym -->
     <div id="topbar">
         <div id="logo">
             THRONE & LIBERTY
@@ -17,66 +17,83 @@
         <div id="clock">00:00:00</div>
     </div>
 
-    <!-- Main Application Container -->
+    <!-- Główny kontener aplikacji -->
     <div id="container">
 
-        <!-- Sidebar Panel -->
+        <!-- Panel boczny z dungeonami w 2 kolumnach oraz przyciskami na dole -->
         <div id="sidebar">
-            <div class="sidebar-header">
-                <h2>Dungeons List</h2>
-                <button id="addBoss" class="action-btn-small">Add Boss</button>
-            </div>
+            <h2>Dungeons List</h2>
             
-            <!-- Pionowy stos dungeonów jeden pod drugim -->
+            <!-- Siatka dwukolumnowa (Grid), która likwiduje suwak pionowy -->
             <div class="dungeon-grid">
                 <div class="sector-group sec-orange">
                     <div class="sector-title">TEMPLE OF TRUTH</div>
-                    <button class="dungeon-btn">Temple of Truth</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(0)">Temple of Truth</button>
                 </div>
                 
                 <div class="sector-group sec-red">
                     <div class="sector-title">CRIMSON ESTATE</div>
-                    <button class="dungeon-btn">Crimson Estate</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(1)">Crimson Estate</button>
                 </div>
 
                 <div class="sector-group sec-orange">
                     <div class="sector-title">BERCANT ESTATE</div>
-                    <button class="dungeon-btn">Bercant Estate</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(2)">Bercant Estate</button>
                 </div>
 
                 <div class="sector-group sec-green">
                     <div class="sector-title">SYLEUS'S ABYSS</div>
-                    <button class="dungeon-btn">Syleus's Abyss</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(3)">Syleus's Abyss</button>
                 </div>
 
                 <div class="sector-group sec-fiolet">
                     <div class="sector-title">SHADOWED CRYPT</div>
-                    <button class="dungeon-btn">Shadowed Crypt</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(4)">Shadowed Crypt</button>
                 </div>
 
                 <div class="sector-group sec-fiolet">
                     <div class="sector-title">TEMPLE OF SYLAVETH</div>
-                    <button class="dungeon-btn">Temple of Sylaveth</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(5)">Temple of Sylaveth</button>
                 </div>
 
                 <div class="sector-group sec-red">
                     <div class="sector-title">ANT NEST</div>
-                    <button class="dungeon-btn">Ant Nest</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(6)">Ant Nest</button>
                 </div>
 
                 <div class="sector-group sec-orange">
-                    <div class="sector-title">SANCTUM OF DESIRE</div>
-                    <button class="dungeon-btn">Sanctum of Desire</button>
+                    <div class="sector-title">SANCTRUM OF DESIRE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(7)">Sanctum of Desire</button>
+                </div>
+            </div>
+
+            <!-- Panel sterowania przypięty ciasno na samym dole sidebaru -->
+            <div id="controlPanel">
+                <h3>Selected Dungeon</h3>
+                <div class="status-info-row">
+                    <p>Name: <span id="curName">---</span></p>
+                    <p>Status: <span id="curStatus">READY</span></p>
+                </div>
+                <div class="status-info-row">
+                    <p>Timer: <span id="curTimer">--:--:--</span></p>
+                    <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
+                </div>
+
+                <button id="killBtn" onclick="registerKill()">REGISTER KILL</button>
+
+                <div class="btn-box">
+                    <button id="editTimeBtn" onclick="manuallyChangeMinutes()">CHANGE COOLDOWN</button>
+                    <button id="forceResetBtn" onclick="resetToReady()">RESET TO READY</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tactical Map Display Area -->
+        <!-- Główny obszar mapy z rozciągnięciem na pełny ekran -->
         <div id="mapWrapper">
             <div id="mapContent">
                 <img id="worldMap" src="images/worldmap.png" draggable="false">
                 
-                <!-- Neon Vector SVG Border Layer -->
+                <!-- Warstwa SVG rysująca neonowe obwódki Twoich regionów na mapie -->
                 <svg id="svgOverlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
                     <path id="poly-orange" class="region-border border-orange" d="M 150,50 L 850,50 L 950,450 L 680,630 L 450,400 Z" />
                     <path id="poly-red" class="region-border border-red" d="M 50,50 L 450,400 L 680,630 L 480,950 L 50,950 Z" />
@@ -84,7 +101,7 @@
                     <path id="poly-fiolet" class="region-border border-fiolet" d="M 680,630 L 950,450 L 950,950 L 480,950 Z" />
                 </svg>
 
-                <!-- Floating Countdown Timers Container -->
+                <!-- Pływające jaskrawe zegary odliczające czas w dół nad regionami -->
                 <div id="htmlOverlay">
                     <div id="zone-timer-orange" class="map-countdown-clock hide">00:00:00</div>
                     <div id="zone-timer-red" class="map-countdown-clock hide">00:00:00</div>
@@ -92,38 +109,10 @@
                     <div id="zone-timer-fiolet" class="map-countdown-clock hide">00:00:00</div>
                 </div>
             </div>
-
-            <!-- Control Panel przeniesiony na dół pod mapę -->
-            <div id="controlPanel">
-                <div class="panel-header-row">
-                    <h3>Selected Dungeon: <span id="bossName" style="color: #ffd54f;">---</span></h3>
-                    <div class="boss-meta-info">Dungeon: <span id="bossDungeon">---</span> | Type: <span id="bossType">---</span></div>
-                </div>
-
-                <div class="status-info-container">
-                    <div class="status-info-row"><p>Status: <span id="bossStatus">READY</span></p></div>
-                    <div class="status-info-row"><p>Elapsed: <span id="elapsed">00:00:00</span></p></div>
-                    <div class="status-info-row"><p>Configured Respawn: <span id="curConfigTime">---</span></p></div>
-                    <div class="status-info-row"><p>Last Kill: <span id="lastKill" style="color: #00e676;">---</span></p></div>
-                </div>
-
-                <div class="control-actions-row">
-                    <button id="killButton" class="action-btn red-btn">REGISTER KILL</button>
-                    <button id="manualKill" class="action-btn blue-btn">MANUAL KILL TIME</button>
-                    <button id="configureVoiceButton" class="action-btn purple-btn">CONFIG ALERT & VOICE</button>
-                    <button id="resetBossState" class="action-btn gray-btn">RESET TO READY</button>
-                </div>
-
-                <div id="historyPanel">
-                    <h4>Kill History Log:</h4>
-                    <ul id="historyList">
-                        <li>No history</li>
-                    </ul>
-                </div>
-            </div>
         </div>
 
     </div>
 
+    <script src="script.js"></script>
 </body>
 </html>
