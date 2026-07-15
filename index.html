@@ -20,49 +20,32 @@
     <!-- Główny kontener aplikacji -->
     <div id="container">
 
-        <!-- Panel boczny z dungeonami pod sobą -->
+        <!-- Panel boczny z dungeonami pod sobą (Poprawione grupy) -->
         <div id="sidebar">
             <h2>Dungeons List</h2>
             
             <div class="dungeon-grid">
+                <!-- GRUPA ŻÓŁTA (1, 2, 3) -->
                 <div class="sector-group sec-orange">
-                    <div class="sector-title">TEMPLE OF TRUTH</div>
-                    <button class="dungeon-btn">Temple of Truth</button>
+                    <div class="sector-title">YELLOW ZONE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(0)">Temple of Truth</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(1)" style="margin-top: 5px;">Crimson Estate</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(2)" style="margin-top: 5px;">Bercant Estate</button>
                 </div>
                 
+                <!-- GRUPA CZERWONA (4, 5) -->
                 <div class="sector-group sec-red">
-                    <div class="sector-title">CRIMSON ESTATE</div>
-                    <button class="dungeon-btn">Crimson Estate</button>
+                    <div class="sector-title">RED ZONE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(3)">Syleus's Abyss</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(4)" style="margin-top: 5px;">Shadowed Crypt</button>
                 </div>
 
-                <div class="sector-group sec-orange">
-                    <div class="sector-title">BERCANT ESTATE</div>
-                    <div class="dungeon-btn">Bercant Estate</div>
-                </div>
-
-                <div class="sector-group sec-green">
-                    <div class="sector-title">SYLEUS'S ABYSS</div>
-                    <div class="dungeon-btn">Syleus's Abyss</div>
-                </div>
-
-                <div class="sector-group sec-fiolet">
-                    <div class="sector-title">SHADOWED CRYPT</div>
-                    <div class="dungeon-btn">Shadowed Crypt</div>
-                </div>
-
-                <div class="sector-group sec-fiolet">
-                    <div class="sector-title">TEMPLE OF SYLAVETH</div>
-                    <div class="dungeon-btn">Temple of Sylaveth</div>
-                </div>
-
-                <div class="sector-group sec-red">
-                    <div class="sector-title">ANT NEST</div>
-                    <div class="dungeon-btn">Ant Nest</div>
-                </div>
-
-                <div class="sector-group sec-orange">
-                    <div class="sector-title">SANCTRUM OF DESIRE</div>
-                    <div class="dungeon-btn">Sanctum of Desire</div>
+                <!-- GRUPA NIEBIESKA (6, 7, 8) -->
+                <div class="sector-group sec-blue">
+                    <div class="sector-title">BLUE ZONE</div>
+                    <button class="dungeon-btn" onclick="selectDungeon(5)">Temple of Sylaveth</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(6)" style="margin-top: 5px;">Ant Nest</button>
+                    <button class="dungeon-btn" onclick="selectDungeon(7)" style="margin-top: 5px;">Sanctum of Desire</button>
                 </div>
             </div>
 
@@ -78,11 +61,11 @@
                     <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
                 </div>
 
-                <button id="killBtn">REGISTER KILL</button>
+                <button id="killBtn" onclick="registerKill()">REGISTER KILL</button>
 
                 <div class="btn-box">
-                    <button id="editTimeBtn">CHANGE COOLDOWN</button>
-                    <button id="forceResetBtn">RESET TO READY</button>
+                    <button id="editTimeBtn" onclick="manuallyChangeMinutes()">CHANGE COOLDOWN</button>
+                    <button id="forceResetBtn" onclick="resetToReady()">RESET TO READY</button>
                 </div>
             </div>
         </div>
@@ -92,14 +75,14 @@
             <div class="map-responsive-container">
                 <img id="worldMap" src="images/worldmap.png" draggable="false">
                 
-                <!-- NAPRAWIONE: Zmiana viewBox na dokładny naturalny wymiar Twojego zdjęcia 1150x1262 -->
+                <!-- Warstwa SVG oparta na Twoich nowych, dokładnych współrzędnych (1150x1262) -->
                 <svg id="svgOverlay" viewBox="0 0 1150 1262" preserveAspectRatio="none">
                     
                     <!-- Region Żółty (Góra / Środek) -->
                     <polygon id="region-yellow" class="map-zone zone-yellow" 
                         points="203,6 188,24 165,24 158,35 150,62 137,70 129,79 125,95 135,106 156,119 149,138 128,151 110,163 105,183 120,217 137,241 154,253 170,262 178,268 206,277 227,292 250,309 282,329 312,350 332,370 358,390 377,407 397,422 419,441 460,459 480,467 494,492 504,515 536,532 554,540 584,552 602,563 612,578 615,613 621,628 658,637 678,630 690,591 704,562 717,535 727,525 768,515 804,507 840,488 873,480 915,469 968,464 1016,466 1063,437 1092,425 1122,415 1133,376 1133,359 1132,348 1145,297 1149,275 1114,284 1041,268 952,235 889,218 840,198 801,171 797,153 780,128 760,117 740,101 716,78 696,65 674,53 647,27 633,10 624,2" />
                     
-                    <!-- Region Fioletowy (Prawy Górny Róg) -->
+                    <!-- Region Fioletowy (Prawy Górny Róg - aktualnie pusty na liście) -->
                     <polygon id="region-purple" class="map-zone zone-purple" 
                         points="1149,260 1125,280 1101,276 1065,269 1024,250 978,240 949,227 909,222 880,213 852,197 816,173 787,153 782,118 759,103 725,81 695,63 667,49 650,30 638,16 634,7 1146,7" />
                     
@@ -124,5 +107,7 @@
 
     </div>
 
+    <!-- Uwaga: skrypt JS na razie zostawiamy stary, dopóki nie skończymy interfejsu -->
+    <script src="script.js"></script>
 </body>
 </html>
