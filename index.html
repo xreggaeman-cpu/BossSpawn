@@ -153,22 +153,22 @@
         function resetToWorldMap() {
             const worldMap = document.getElementById("worldMap");
             const subMap = document.getElementById("subMap");
-            const svgOverlay = document.getElementById("svgOverlay");
-            const htmlOverlay = document.getElementById("htmlOverlay");
-            const backBtn = document.getElementById("backToWorldBtn");
-            const viewDisplay = document.getElementById("viewLocationName");
+const svgOverlay = document.getElementById("svgOverlay");
+const htmlOverlay = document.getElementById("htmlOverlay");
+const backBtn = document.getElementById("backToWorldBtn");
+const viewDisplay = document.getElementById("viewLocationName");
 
-            // Przywrócenie pierwotnego napisu na środku paska
-            viewDisplay.innerText = "WORLD MAP";
-            viewDisplay.style.color = "#00e676"; // Powrót do zielonego standardu
+// Przywrócenie pierwotnego napisu na środku paska
+viewDisplay.innerText = "WORLD MAP";
+viewDisplay.style.color = "#00e676"; // Powrót do zielonego standardu
 
-            // Resetowanie map i warstw
-            worldMap.style.display = "block";
-            svgOverlay.style.display = "block";
-            htmlOverlay.style.display = "block";
-            
-            subMap.classList.add("hide-submap");
-            subMap.src = "";
-            backBtn.classList.remove("show-back-btn");
-            backBtn.classList.add("hide-btn");
-        }
+// Resetowanie map i warstw
+worldMap.style.display = "block";
+svgOverlay.style.display = "block";
+htmlOverlay.style.display = "block";
+
+subMap.classList.add("hide-submap");
+subMap.src = "";
+
+backBtn.classList.remove("show-back-btn");
+backBtn.classList.add("hide-btn");
