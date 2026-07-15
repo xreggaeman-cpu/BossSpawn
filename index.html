@@ -24,8 +24,8 @@
         <div id="sidebar">
             <h2>Dungeons List</h2>
             
-            <!-- List of Dungeons divided by sectors -->
-            <div class="dungeon-list">
+            <!-- Grid container for two columns layout -->
+            <div class="dungeon-grid">
                 <div class="sector-group sec-orange">
                     <div class="sector-title">TEMPLE OF TRUTH</div>
                     <button class="dungeon-btn" onclick="selectDungeon(0)">Temple of Truth</button>
@@ -67,13 +67,17 @@
                 </div>
             </div>
 
-            <!-- Control Panel for Selected Dungeon -->
+            <!-- Control Panel for Selected Dungeon pinned to the bottom -->
             <div id="controlPanel">
                 <h3>Selected Dungeon</h3>
-                <p>Name: <span id="curName">---</span></p>
-                <p>Status: <span id="curStatus">READY</span></p>
-                <p>Timer: <span id="curTimer">--:--:--</span></p>
-                <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
+                <div class="status-info-row">
+                    <p>Name: <span id="curName">---</span></p>
+                    <p>Status: <span id="curStatus">READY</span></p>
+                </div>
+                <div class="status-info-row">
+                    <p>Timer: <span id="curTimer">--:--:--</span></p>
+                    <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
+                </div>
 
                 <button id="killBtn" onclick="registerKill()">REGISTER KILL</button>
 
@@ -91,13 +95,9 @@
                 
                 <!-- Neon Vector SVG Border Layer -->
                 <svg id="svgOverlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-                    <!-- Sektor Pomarańczowy -->
                     <path id="poly-orange" class="region-border border-orange" d="M 150,50 L 850,50 L 950,450 L 680,630 L 450,400 Z" />
-                    <!-- Sektor Czerwony -->
                     <path id="poly-red" class="region-border border-red" d="M 50,50 L 450,400 L 680,630 L 480,950 L 50,950 Z" />
-                    <!-- Sektor Zielony -->
                     <path id="poly-green" class="region-border border-green" d="M 50,300 L 350,300 L 550,550 L 350,800 L 50,700 Z" />
-                    <!-- Sektor Fioletowy -->
                     <path id="poly-fiolet" class="region-border border-fiolet" d="M 680,630 L 950,450 L 950,950 L 480,950 Z" />
                 </svg>
 
