@@ -8,44 +8,48 @@
 </head>
 <body>
 
-    <!-- Górny pasek z logiem oraz zegarem głównym -->
+    <!-- Górny pasek z logiem, dynamiczną nazwą widoku oraz zegarem głównym -->
     <div id="topbar">
         <div id="logo">
             THRONE & LIBERTY
             <span>Global Region & Dungeon Tracker</span>
         </div>
+        
+        <!-- NOWOŚĆ: Środkowy dynamiczny napis widoku -->
+        <div id="currentViewDisplay">CURRENT VIEW: <span id="viewLocationName">WORLD MAP</span></div>
+        
         <div id="clock">00:00:00</div>
     </div>
 
     <!-- Główny kontener aplikacji -->
     <div id="container">
 
-        <!-- Panel boczny z dungeonami pod sobą (Poprawione grupy) -->
+        <!-- Panel boczny z dungeonami pod sobą -->
         <div id="sidebar">
             <h2>Dungeons List</h2>
             
             <div class="dungeon-grid">
-                <!-- GRUPA ŻÓŁTA (1, 2, 3) -->
+                <!-- GRUPA TALANDRE - ŻÓŁTA (1, 2, 3) -->
                 <div class="sector-group sec-orange">
-                    <div class="sector-title">YELLOW ZONE</div>
-                    <button class="dungeon-btn" onclick="selectDungeon(0)">Temple of Truth</button>
-                    <button class="dungeon-btn" onclick="selectDungeon(1)" style="margin-top: 5px;">Crimson Estate</button>
-                    <button class="dungeon-btn" onclick="selectDungeon(2)" style="margin-top: 5px;">Bercant Estate</button>
+                    <div class="sector-title">TALANDRE</div>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'temple_of_truth', 'Temple of Truth')">Temple of Truth</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'crimson_estate', 'Crimson Estate')" style="margin-top: 5px;">Crimson Estate</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'bercant_estate', 'Bercant Estate')" style="margin-top: 5px;">Bercant Estate</button>
                 </div>
                 
-                <!-- GRUPA CZERWONA (4, 5) -->
+                <!-- GRUPA LASLAN - CZERWONA (4, 5) -->
                 <div class="sector-group sec-red">
-                    <div class="sector-title">RED ZONE</div>
-                    <button class="dungeon-btn" onclick="selectDungeon(3)">Syleus's Abyss</button>
-                    <button class="dungeon-btn" onclick="selectDungeon(4)" style="margin-top: 5px;">Shadowed Crypt</button>
+                    <div class="sector-title">LASLAN</div>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'syleus_abyss', 'Syleus\'s Abyss')">Syleus's Abyss</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'shadowed_crypt', 'Shadowed Crypt')" style="margin-top: 5px;">Shadowed Crypt</button>
                 </div>
 
-                <!-- GRUPA NIEBIESKA (6, 7, 8) -->
+                <!-- GRUPA STONEGARD - NIEBIESKA (6, 7, 8) -->
                 <div class="sector-group sec-blue">
-                    <div class="sector-title">BLUE ZONE</div>
-                    <button class="dungeon-btn" onclick="selectDungeon(5)">Temple of Sylaveth</button>
-                    <button class="dungeon-btn" onclick="selectDungeon(6)" style="margin-top: 5px;">Ant Nest</button>
-                    <button class="dungeon-btn" onclick="selectDungeon(7)" style="margin-top: 5px;">Sanctum of Desire</button>
+                    <div class="sector-title">STONEGARD</div>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'temple_of_sylaveth', 'Temple of Sylaveth')">Temple of Sylaveth</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'ant_nest', 'Ant Nest')" style="margin-top: 5px;">Ant Nest</button>
+                    <button class="dungeon-btn" onclick="changeTacticalMap('dungeon', 'sanctum_of_desire', 'Sanctum of Desire')" style="margin-top: 5px;">Sanctum of Desire</button>
                 </div>
             </div>
 
@@ -61,37 +65,44 @@
                     <p>Configured: <span id="curConfigTime">4h (240m)</span></p>
                 </div>
 
-                <button id="killBtn" onclick="registerKill()">REGISTER KILL</button>
+                <button id="killBtn">REGISTER KILL</button>
 
                 <div class="btn-box">
-                    <button id="editTimeBtn" onclick="manuallyChangeMinutes()">CHANGE COOLDOWN</button>
-                    <button id="forceResetBtn" onclick="resetToReady()">RESET TO READY</button>
+                    <button id="editTimeBtn">CHANGE COOLDOWN</button>
+                    <button id="forceResetBtn">RESET TO READY</button>
                 </div>
             </div>
         </div>
 
         <!-- Główny obszar mapy taktycznej -->
         <div id="mapWrapper">
+            
+            <!-- Pływający przycisk powrotu na mapę świata -->
+            <button id="backToWorldBtn" class="hide-btn" onclick="resetToWorldMap()">← BACK TO WORLD MAP</button>
+
             <div class="map-responsive-container">
+                <!-- Podstawowa Mapa Świata -->
                 <img id="worldMap" src="images/worldmap.png" draggable="false">
+                
+                <!-- Dynamicznie podmieniana sub-mapa dla przybliżeń regionów i dungeonów -->
+                <img id="subMap" src="" draggable="false" class="hide-submap">
                 
                 <!-- Warstwa SVG oparta na Twoich nowych, dokładnych współrzędnych (1150x1262) -->
                 <svg id="svgOverlay" viewBox="0 0 1150 1262" preserveAspectRatio="none">
-                    
-                    <!-- Region Żółty (Góra / Środek) -->
-                    <polygon id="region-yellow" class="map-zone zone-yellow" 
+                    <!-- Region Talandre (Żółty - Góra / Środek) -->
+                    <polygon id="region-yellow" class="map-zone zone-yellow" onclick="changeTacticalMap('region', 'talandre', 'Talandre')"
                         points="203,6 188,24 165,24 158,35 150,62 137,70 129,79 125,95 135,106 156,119 149,138 128,151 110,163 105,183 120,217 137,241 154,253 170,262 178,268 206,277 227,292 250,309 282,329 312,350 332,370 358,390 377,407 397,422 419,441 460,459 480,467 494,492 504,515 536,532 554,540 584,552 602,563 612,578 615,613 621,628 658,637 678,630 690,591 704,562 717,535 727,525 768,515 804,507 840,488 873,480 915,469 968,464 1016,466 1063,437 1092,425 1122,415 1133,376 1133,359 1132,348 1145,297 1149,275 1114,284 1041,268 952,235 889,218 840,198 801,171 797,153 780,128 760,117 740,101 716,78 696,65 674,53 647,27 633,10 624,2" />
                     
-                    <!-- Region Fioletowy (Prawy Górny Róg - aktualnie pusty na liście) -->
-                    <polygon id="region-purple" class="map-zone zone-purple" 
+                    <!-- Region Nix (Fioletowy - Prawy Górny Róg) -->
+                    <polygon id="region-purple" class="map-zone zone-purple" onclick="changeTacticalMap('region', 'nix', 'Nix')"
                         points="1149,260 1125,280 1101,276 1065,269 1024,250 978,240 949,227 909,222 880,213 852,197 816,173 787,153 782,118 759,103 725,81 695,63 667,49 650,30 638,16 634,7 1146,7" />
                     
-                    <!-- Region Niebieski (Prawa Strona / Dół) -->
-                    <polygon id="region-blue" class="map-zone zone-blue" 
+                    <!-- Region Stonegard (Niebieski - Prawa Strona / Dół) -->
+                    <polygon id="region-blue" class="map-zone zone-blue" onclick="changeTacticalMap('region', 'stonegard', 'Stonegard')"
                         points="985,494 965,487 936,494 913,501 881,509 853,519 831,528 796,539 774,552 755,560 739,565 713,582 706,592 688,619 679,629 665,644 650,645 634,644 607,671 597,687 583,712 567,736 554,750 545,771 528,803 520,818 513,843 503,877 495,897 493,924 490,937 497,958 512,986 521,1015 535,1037 553,1056 576,1066 583,1087 586,1120 589,1138 593,1168 604,1198 612,1206 640,1227 662,1231 700,1233 721,1221 743,1170 756,1108 751,1052 776,1016 799,999 830,994 853,975 889,968 934,955 952,939 998,925 1024,915 1050,904 1065,858 1078,828 1092,783 1101,767 1121,752 1140,724 1144,697 1136,670 1120,640 1119,609 1114,584 1099,559 1081,538 1048,529 1018,509" />
                     
-                    <!-- Region Czerwony (Lewa Strona / Dół) -->
-                    <polygon id="region-red" class="map-zone zone-red" 
+                    <!-- Region Laslan (Czerwony - Lewa Strona / Dół) -->
+                    <polygon id="region-red" class="map-zone zone-red" onclick="changeTacticalMap('region', 'laslan', 'Laslan')"
                         points="166,267 197,283 234,298 241,304 259,329 302,347 309,354 327,374 355,393 378,408 390,418 422,436 439,448 452,459 466,472 477,485 492,505 505,530 526,534 547,537 573,555 599,566 611,589 617,623 625,642 596,680 584,698 557,734 543,760 530,793 516,826 510,854 497,882 488,908 477,913 431,911 410,906 394,925 384,942 353,955 330,961 312,968 295,989 285,1009 258,1016 217,1016 193,1004 178,945 162,925 131,939 101,923 90,886 73,855 51,846 51,803 69,745 60,720 63,676 79,668 112,629 101,598 120,547 129,515 91,510 60,482 38,465 20,436 20,412 18,376 29,359 40,339 40,309 60,290 87,293 122,309 139,308 144,273" />
                 </svg>
 
@@ -107,7 +118,38 @@
 
     </div>
 
-    <!-- Uwaga: skrypt JS na razie zostawiamy stary, dopóki nie skończymy interfejsu -->
-    <script src="script.js"></script>
-</body>
-</html>
+    <!-- SZYBKI I NIEZAWODNY KOD AKTUALIZACJI PASKA I PODMIANY DUNGEONÓW -->
+    <script>
+        function changeTacticalMap(type, filename, displayName) {
+            const worldMap = document.getElementById("worldMap");
+            const subMap = document.getElementById("subMap");
+            const svgOverlay = document.getElementById("svgOverlay");
+            const htmlOverlay = document.getElementById("htmlOverlay");
+            const backBtn = document.getElementById("backToWorldBtn");
+            const viewDisplay = document.getElementById("viewLocationName");
+            
+            // 1. Aktualizacja napisów w ramce sterowania oraz na środku topbaru
+            document.getElementById("curName").innerText = displayName;
+            viewDisplay.innerText = displayName.toUpperCase();
+            viewDisplay.style.color = "#ffd54f"; // Zmiana koloru tekstu na jaskrawy żółty dla celów taktycznych
+
+            // 2. Ładowanie obrazu po pełnych nazwach z parametrów HTML
+            if (type === 'region') {
+                subMap.src = `images/region-${filename}.png`;
+            } else if (type === 'dungeon') {
+                subMap.src = `images/dungeon-${filename}.png`;
+            }
+
+            // 3. Przełączenie widoczności warstw w oknie przeglądarki
+            worldMap.style.display = "none";
+            svgOverlay.style.display = "none";
+            htmlOverlay.style.display = "none";
+            
+            subMap.classList.remove("hide-submap");
+            backBtn.classList.remove("hide-btn");
+            backBtn.classList.add("show-back-btn");
+        }
+
+        function resetToWorldMap() {
+            const worldMap = document.getElementById("worldMap");
+            const subMap = document.getElementById("subMap");
